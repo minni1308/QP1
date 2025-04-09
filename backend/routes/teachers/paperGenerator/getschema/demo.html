@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .code {
+        margin-top: -20px;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+      }
+      .pcode {
+        margin: 10px;
+      }
+      .cllgename {
+        text-align: center;
+        /* margin: 0px 25%; */
+        text-transform: uppercase;
+        font-size: 1.5em;
+        font-weight: bold;
+        margin: 1px;
+      }
+      .cllgetype {
+        text-align: center;
+        font-size: 1em;
+        font-weight: bolder;
+      }
+      .examdetails {
+        text-align: center;
+        margin: 3px;
+        font-weight: 500;
+        font-size: 1.2em;
+      }
+      .subjectname {
+        text-transform: uppercase;
+        text-align: center;
+        font-weight: 500;
+        font-size: 1.5em;
+      }
+      .subjectdetail {
+        text-align: center;
+      }
+      .examdet {
+        display: flex;
+        justify-content: space-between;
+        margin: 0px 10px;
+      }
+      .secdetails {
+        display: flex;
+        flex-direction: row;
+        margin: 10px;
+        justify-content: space-between;
+        font-size: 1.3em;
+        font-weight: 500;
+      }
+      .question {
+        font-size: 1.2em;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <section class="code">
+        <div class="pcode">Code: {{code}}</div>
+      </section>
+      <section>
+        <div class="cllgename">B V RAJU INSTITUTE OF TECHNOLOGY</div>
+        <div class="cllgetype">(UGC AUTONOMUOUS)</div>
+        <div class="examdetails">
+          B.Tech {{subyear}} Year {{subsem}} Training Examination, {{month}}
+          {{year}}
+        </div>
+        <div class="subjectname">{{subjectname}}</div>
+      </section>
+      <section class="examdet">
+        <h3>Time: {{time}} Hours</h3>
+        <h3>Max Marks: {{maxMarks}}</h3>
+      </section>
+    </header>
+    <div>{{section details}}</div>
+  </body>
+</html>
