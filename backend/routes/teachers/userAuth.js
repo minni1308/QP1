@@ -1,37 +1,41 @@
-var express = require('express');
-var user = require('../../models/teachers');
-var userRouter = express.Router();
-var cors = require('../cors');
+const express = require('express');
+const userRouter = express.Router();
+const cors = require('../cors');
+const Teacher = require('../../models/teachers');
+
 userRouter.use(express.json());
 
 userRouter.route('/:userId')
-    .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
-    .get(cors.cors, (req, res, next) => {
-        user.findById(req.params.userId)
-            .then((teacher) => {
-                user.findByIdAndUpdate(req.params.userId, {
-                    $set: { 'isauth': true }
-                })
-                    .then((teacher) => {
-                        res.statusCode = 200;
-                        res.setHeader('Content-Type', 'application/json');
-                        res.json({ sucess: true });
-                    })
-                    .catch((err) => next(err));
-            })
-            .catch((err) => next(err));
-    })
-    .post(cors.corsWithOptions, (req, res, next) => {
-        res.statusCode = 401;
-        res.end('POST Operation is not Permitted');
-    })
-    .put(cors.corsWithOptions, (req, res, next) => {
-        res.statusCode = 401;
-        res.end('PUT Operation is not Permitted');
-    })
-    .delete(cors.corsWithOptions, (req, res, next) => {
-        res.statusCode = 401;
-        res.end('DELETE Operation is not Permitted');
-    })
+  .options(cors.corsWithOptions, (_, res) => res.sendStatus(200))
+  
+  .get(cors.cors, async (req, res, next) => {
+    try {
+      const teacher = await Teacher.findById(req.params.userId);
+
+      if (!teacher) {
+        const err = new Error("User not found");
+        err.status = 404;
+        return next(err);
+      }
+
+      await Teacher.findByIdAndUpdate(req.params.userId, { isauth: true });
+
+      res.status(200).json({ success: true });
+    } catch (err) {
+      next(err);
+    }
+  })
+
+  .post(cors.corsWithOptions, (_, res) => {
+    res.status(403).end("POST operation is not permitted");
+  })
+
+  .put(cors.corsWithOptions, (_, res) => {
+    res.status(403).end("PUT operation is not permitted");
+  })
+
+  .delete(cors.corsWithOptions, (_, res) => {
+    res.status(403).end("DELETE operation is not permitted");
+  });
 
 module.exports = userRouter;

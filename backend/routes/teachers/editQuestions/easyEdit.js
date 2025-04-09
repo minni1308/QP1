@@ -1,149 +1,59 @@
-var express = require('express');
-var easyEditRouter = express.Router();
-var authenticate = require('../../../authenticate');
-var question = require('../../../models/questions');
-var cors = require('../../cors');
+const express = require('express');
+const easyEditRouter = express.Router();
+const authenticate = require('../../../authenticate');
+const Question = require('../../../models/questions');
+const cors = require('../../cors');
 
 easyEditRouter.use(express.json());
+
+// Utility: extract questions by unit & teacher
+const getUnitQuestions = (data, unit, teacherId) => {
+  return data?.easy?.[unit]?.filter(q => q.teacher.equals(teacherId)) || [];
+};
+
+// Utility: pull teacher's questions from unit and insert new ones
+const updateUnitQuestions = async (unit, id, teacherId, newQuestions) => {
+  await Question.updateOne(
+    { _id: id },
+    { $pull: { [`easy.${unit}`]: { teacher: teacherId } } }
+  );
+
+  const doc = await Question.findById(id, { [`easy.${unit}`]: 1 });
+  if (!doc) throw new Error("Question document not found");
+
+  doc.easy[unit].push(...newQuestions);
+  return await doc.save();
+};
+
 easyEditRouter.route('/get')
-    .options(cors.corsWithOptions, (req, resp) => { resp.sendStatus(200); })
-    .get((req, res, next) => {
-        res.end('GET operation is not Perfomed');
-    })
-    .post(cors.corsWithOptions, authenticate.verifyUser, async (req, response, next) => {
-        try {
-            if (req.body.unit === 'u1') {
-                var questions = await question.findById(req.body.id, { "easy.u1": 1 })
-                var teacherQuestions = questions.easy.u1.filter((data) => {
-                    return data.teacher.equals(req.user._id);
-                })
-                response.statusCode = 200;
-                response.setHeader('Content-Type', 'application/json');
-                response.json(teacherQuestions);
-            } else if (req.body.unit === 'u2') {
-                var questions = await question.findById(req.body.id, { "easy.u2": 1 })
-                var teacherQuestions = questions.easy.u2.filter((data) => {
-                    return data.teacher.equals(req.user._id);
-                })
-                response.statusCode = 200;
-                response.setHeader('Content-Type', 'application/json');
-                response.json(teacherQuestions);
-            } else if (req.body.unit === 'u3') {
-                var questions = await question.findById(req.body.id, { "easy.u3": 1 })
-                var teacherQuestions = questions.easy.u3.filter((data) => {
-                    return data.teacher.equals(req.user._id);
-                })
-                response.statusCode = 200;
-                response.setHeader('Content-Type', 'application/json');
-                response.json(teacherQuestions);
-            } else if (req.body.unit === 'u4') {
-                var questions = await question.findById(req.body.id, { "easy.u4": 1 })
-                var teacherQuestions = questions.easy.u4.filter((data) => {
-                    return data.teacher.equals(req.user._id);
-                })
-                response.statusCode = 200;
-                response.setHeader('Content-Type', 'application/json');
-                response.json(teacherQuestions);
-            } else {
-                var questions = await question.findById(req.body.id, { "easy.u5": 1 })
-                var teacherQuestions = questions.easy.u5.filter((data) => {
-                    return data.teacher.equals(req.user._id);
-                })
-                response.statusCode = 200;
-                response.setHeader('Content-Type', 'application/json');
-                response.json(teacherQuestions);
-            }
-        } catch (err) {
-            console.log(err);
-            next(err);
-        }
-    })
-    .put((req, res, next) => {
-        res.end('PUT operation is not perfromed');
-    })
-    .delete((req, res, next) => {
-        res.end('DELETE Operation is not Performed');
-    })
+  .options(cors.corsWithOptions, (_, res) => res.sendStatus(200))
+  .get((_, res) => res.status(405).end('GET operation is not permitted'))
+  .post(cors.corsWithOptions, authenticate.verifyUser, async (req, res, next) => {
+    try {
+      const { id, unit } = req.body;
+      const doc = await Question.findById(id, { [`easy.${unit}`]: 1 });
+      const filtered = getUnitQuestions(doc, unit, req.user._id);
+      res.status(200).json(filtered);
+    } catch (err) {
+      next(err);
+    }
+  })
+  .put((_, res) => res.status(405).end('PUT operation is not permitted'))
+  .delete((_, res) => res.status(405).end('DELETE operation is not permitted'));
+
 easyEditRouter.route('/put')
-    .options(cors.corsWithOptions, (req, resp) => { resp.sendStatus(200); })
-    .get((req,res,next)=>{
-        res.end('GET operation is not perfromed');
-    })
-    .post((req,res,next)=>{
-        res.end('POST operation is not perfromed');
-    })
-    .put(cors.corsWithOptions, authenticate.verifyUser, async (req, response, next) => {
-        try {
-            if (req.body.unit === 'u1') {
-                question.updateOne({ _id: req.body.id }, { $pull: { "easy.u1": { teacher: req.user._id } } }, { multi: true }).then((sx) => {
-                    console.log('success');
-                }).catch((err) => next(err));
-                var data = await question.findById(req.body.id, { "easy.u1": 1 });
-                for (var i = 0; i < req.body.easy.length; i++) {
-                    data.easy.u1.push(req.body.easy[i]);
-                }
-                await data.save()
-                response.statusCode = 200;
-                response.setHeader('Content-Type', 'application/json');
-                response.json({ success: true });
-            } else if (req.body.unit === 'u2') {
-                question.updateOne({ _id: req.body.id }, { $pull: { "easy.u2": { teacher: req.user._id } } }, { multi: true }).then((sx) => {
-                    console.log('success');
-                }).catch((err) => next(err));
-                var data = await question.findById(req.body.id, { "easy.u2": 1 });
-                for (var i = 0; i < req.body.easy.length; i++) {
-                    data.easy.u2.push(req.body.easy[i]);
-                }
-                await data.save()
-                response.statusCode = 200;
-                response.setHeader('Content-Type', 'application/json');
-                response.json({ success: true });
+  .options(cors.corsWithOptions, (_, res) => res.sendStatus(200))
+  .get((_, res) => res.status(405).end('GET operation is not permitted'))
+  .post((_, res) => res.status(405).end('POST operation is not permitted'))
+  .put(cors.corsWithOptions, authenticate.verifyUser, async (req, res, next) => {
+    try {
+      const { unit, id, easy } = req.body;
+      await updateUnitQuestions(unit, id, req.user._id, easy);
+      res.status(200).json({ success: true });
+    } catch (err) {
+      next(err);
+    }
+  })
+  .delete((_, res) => res.status(405).end('DELETE operation is not permitted'));
 
-            } else if (req.body.unit === 'u3') {
-                question.updateOne({ _id: req.body.id }, { $pull: { "easy.u3": { teacher: req.user._id } } }, { multi: true }).then((sx) => {
-                    console.log('success');
-                }).catch((err) => next(err));
-                var data = await question.findById(req.body.id, { "easy.u3": 1 });
-                for (var i = 0; i < req.body.easy.length; i++) {
-                    data.easy.u3.push(req.body.easy[i]);
-                }
-                await data.save()
-                response.statusCode = 200;
-                response.setHeader('Content-Type', 'application/json');
-                response.json({ success: true });
-
-            } else if (req.body.unit === 'u4') {
-                question.updateOne({ _id: req.body.id }, { $pull: { "easy.u4": { teacher: req.user._id } } }, { multi: true }).then((sx) => {
-                    console.log('success');
-                }).catch((err) => next(err));
-                var data = await question.findById(req.body.id, { "easy.u4": 1 });
-                for (var i = 0; i < req.body.easy.length; i++) {
-                    data.easy.u4.push(req.body.easy[i]);
-                }
-                await data.save()
-                response.statusCode = 200;
-                response.setHeader('Content-Type', 'application/json');
-                response.json({ success: true });
-
-            } else {
-                question.updateOne({ _id: req.body.id }, { $pull: { "easy.u5": { teacher: req.user._id } } }, { multi: true }).then((sx) => {
-                    console.log('success');
-                }).catch((err) => next(err));
-                var data = await question.findById(req.body.id, { "easy.u5": 1 });
-                for (var i = 0; i < req.body.easy.length; i++) {
-                    data.easy.u5.push(req.body.easy[i]);
-                }
-                await data.save()
-                response.statusCode = 200;
-                response.setHeader('Content-Type', 'application/json');
-                response.json({ success: true });
-            }
-        } catch (err) {
-            console.log(err);
-            next(err);
-        }
-    })
-    .delete((req,res,next)=>{
-        res.end('DELETE Operation is not Performed');
-    })
 module.exports = easyEditRouter;
