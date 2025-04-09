@@ -113,4 +113,4 @@ router.route('/:departmentId')
     }
   });
 
-module.exports = departmentRouter;
+module.exports = router;

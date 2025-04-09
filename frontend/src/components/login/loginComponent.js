@@ -86,7 +86,7 @@ const Login = () => {
       }}
     >
       <Col xs={12} md={2} style={{ padding: "1em" }}>
-        <img src="/back.jpeg" alt="vishu logo" width="200em" />
+        <img src="/Users/meenakshikolishetty/QP-main/frontend/public/back.jpeg" alt="vishu logo" width="200em" />
       </Col>
       <Col xs={12} md={10} style={{ paddingLeft: "10%" }}>
         <Form onSubmit={handleSubmit}>
