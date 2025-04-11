@@ -4,82 +4,143 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Question Paper</title>
     <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding: 20px;
+        line-height: 1.6;
+      }
+
       .code {
-        margin-top: -20px;
         display: flex;
-        flex-direction: row;
-        justify-content: space-between;
+        justify-content: flex-end;
+        margin-bottom: 10px;
+        font-size: 1.1em;
+        font-weight: 500;
       }
-      .pcode {
-        margin: 10px;
-      }
-      .cllgename {
+
+      .college-name {
         text-align: center;
-        /* margin: 0px 25%; */
         text-transform: uppercase;
-        font-size: 1.5em;
+        font-size: 1.6em;
         font-weight: bold;
-        margin: 1px;
+        margin: 5px 0;
       }
-      .cllgetype {
+
+      .college-type {
         text-align: center;
         font-size: 1em;
-        font-weight: bolder;
+        font-weight: bold;
+        margin-bottom: 10px;
       }
-      .examdetails {
+
+      .exam-title {
         text-align: center;
-        margin: 3px;
-        font-weight: 500;
         font-size: 1.2em;
+        font-weight: 600;
+        margin-bottom: 5px;
       }
-      .subjectname {
+
+      .subject-name {
+        text-align: center;
         text-transform: uppercase;
-        text-align: center;
-        font-weight: 500;
-        font-size: 1.5em;
+        font-size: 1.4em;
+        font-weight: 600;
+        margin: 10px 0;
       }
-      .subjectdetail {
-        text-align: center;
-      }
-      .examdet {
+
+      .exam-meta {
         display: flex;
         justify-content: space-between;
-        margin: 0px 10px;
+        margin: 15px 10px;
+        font-size: 1.2em;
+        font-weight: 500;
       }
+
+      .section-container {
+        margin-top: 20px;
+      }
+
       .secdetails {
         display: flex;
-        flex-direction: row;
-        margin: 10px;
         justify-content: space-between;
-        font-size: 1.3em;
-        font-weight: 500;
-      }
-      .question {
+        margin: 10px 0;
         font-size: 1.2em;
+        font-weight: 600;
+        border-bottom: 1px solid #aaa;
+        padding-bottom: 5px;
+      }
+
+      .question-list {
+        padding-left: 25px;
+        margin-bottom: 15px;
+      }
+
+      .question {
+        font-size: 1.1em;
+        margin-bottom: 5px;
+      }
+
+      /* Print styling */
+      @media print {
+        body {
+          padding: 0;
+        }
+
+        .code,
+        .exam-meta {
+          font-size: 1em;
+        }
+
+        .college-name {
+          font-size: 1.5em;
+        }
+
+        .subject-name {
+          font-size: 1.3em;
+        }
+
+        .question {
+          font-size: 1em;
+        }
+
+        .secdetails {
+          font-size: 1em;
+        }
       }
     </style>
   </head>
+
   <body>
+    <!-- Paper Code -->
+    <div class="code">Code: {{code}}</div>
+
+    <!-- Header -->
     <header>
-      <section class="code">
-        <div class="pcode">Code: {{code}}</div>
-      </section>
-      <section>
-        <div class="cllgename">B V RAJU INSTITUTE OF TECHNOLOGY</div>
-        <div class="cllgetype">(UGC AUTONOMUOUS)</div>
-        <div class="examdetails">
-          B.Tech {{subyear}} Year {{subsem}} Training Examination, {{month}}
-          {{year}}
-        </div>
-        <div class="subjectname">{{subjectname}}</div>
-      </section>
-      <section class="examdet">
-        <h3>Time: {{time}} Hours</h3>
-        <h3>Max Marks: {{maxMarks}}</h3>
-      </section>
+      <div class="college-name">B V Raju Institute of Technology</div>
+      <div class="college-type">(UGC Autonomous)</div>
+      <div class="exam-title">
+        B.Tech {{subyear}} Year {{subsem}} Training Examination, {{month}} {{year}}
+      </div>
+      <div class="subject-name">{{subjectname}}</div>
     </header>
-    <div>{{section details}}</div>
+
+    <!-- Exam Duration and Max Marks -->
+    <div class="exam-meta">
+      <div>Time: {{time}} Hours</div>
+      <div>Max Marks: {{maxMarks}}</div>
+    </div>
+
+    <!-- Section-wise Questions -->
+    <div class="section-container">
+      {{section details}}
+    </div>
   </body>
 </html>

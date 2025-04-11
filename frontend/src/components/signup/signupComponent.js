@@ -5,11 +5,11 @@ import {
   FormGroup,
   Label,
   Input,
-  FormText,
   Row,
   Col,
   Container,
   Alert,
+  FormText,
 } from "reactstrap";
 import { baseUrl } from "../../url";
 import { WaveTopBottomLoading } from "react-loadingg";
@@ -115,84 +115,128 @@ const Signup = () => {
   }
 
   return (
-    <Form onSubmit={handleSubmit} style={{ padding: "2%", margin: "auto" }}>
-      <h3 style={{ color: "blue", textAlign: "center" }}>Sign Up</h3>
-      <FormGroup>
-        <Label for="name">Name</Label>
-        <Input
-          name="name"
-          value={formData.name}
-          onChange={handleInput}
-          placeholder="Name"
-          required
-        />
-      </FormGroup>
-      <FormGroup>
-        <Label for="email">Email</Label>
-        <Input
-          name="email"
-          type="email"
-          value={formData.email}
-          onChange={handleInput}
-          placeholder="Email"
-          required
-        />
-      </FormGroup>
-      <FormGroup>
-        <Label for="phno">Phone Number</Label>
-        <Input
-          name="phno"
-          value={formData.phno}
-          onChange={handleInput}
-          placeholder="Phone Number"
-          required
-        />
-      </FormGroup>
-
-      <Row>
-        <Col sm={8}>
-          <FormGroup>
-            <Label for="password">Password</Label>
-            <Input
-              name="password"
-              type="password"
-              value={formData.password}
-              onChange={handleInput}
-              placeholder="Password"
-              required
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label for="rewrite">Re-enter Password</Label>
-            <Input
-              name="rewrite"
-              type="password"
-              value={formData.rewrite}
-              onChange={handleInput}
-              placeholder="Re-enter Password"
-              required
-            />
-          </FormGroup>
-        </Col>
-        <Col sm={4}>
-          <ol>
-            <li>At least one digit [0–9]</li>
-            <li>One lowercase letter [a–z]</li>
-            <li>One uppercase letter [A–Z]</li>
-            <li>One special character</li>
-            <li>8–32 characters long</li>
-          </ol>
-        </Col>
-      </Row>
-
-      <FormText className="mb-3">
-        Already have an account? <Link to="/signin">Login</Link>
+    <Container
+      style={{
+        maxWidth: "400px",
+        margin: "auto",
+        padding: "2rem",
+        marginTop: "5rem", 
+        marginBottom: "12rem",
+        border: "1px solid #ddd",
+        borderRadius: "8px",
+        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+        backgroundColor: "white",
+      }}
+    >
+      <h3 style={{ textAlign: "center", marginBottom: "1rem" }}>Sign up</h3>
+      <p style={{ textAlign: "center", color: "gray", marginBottom: "2rem" }}>
+        Sign up to continue
+      </p>
+      <Form onSubmit={handleSubmit}>
+        <FormGroup>
+          <Label for="name">Name</Label>
+          <Input
+            name="name"
+            value={formData.name}
+            onChange={handleInput}
+            placeholder="Name"
+            required
+            style={{
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+              padding: "10px",
+            }}
+          />
+        </FormGroup>
+        <FormGroup>
+          <Label for="email">Email</Label>
+          <Input
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleInput}
+            placeholder="Email"
+            required
+            style={{
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+              padding: "10px",
+            }}
+          />
+        </FormGroup>
+        <FormGroup>
+          <Label for="phno">Phone Number</Label>
+          <Input
+            name="phno"
+            value={formData.phno}
+            onChange={handleInput}
+            placeholder="Phone Number"
+            required
+            style={{
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+              padding: "10px",
+            }}
+          />
+        </FormGroup>
+        <FormGroup>
+  <Label for="password">Password</Label>
+  <Input
+    name="password"
+    type="password"
+    value={formData.password}
+    onChange={handleInput}
+    placeholder="Password"
+    required
+    style={{
+      borderRadius: "4px",
+      border: "1px solid #ccc",
+      padding: "10px",
+    }}
+  />
+  <FormText color="muted" style={{ marginTop: "0.5rem" }}>
+    Password must be 8-32 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.
+  </FormText>
+</FormGroup>
+        <FormGroup>
+          <Label for="rewrite">Re-enter Password</Label>
+          <Input
+            name="rewrite"
+            type="password"
+            value={formData.rewrite}
+            onChange={handleInput}
+            placeholder="Re-enter Password"
+            required
+            style={{
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+              padding: "10px",
+            }}
+          />
+        </FormGroup>
+        <FormGroup check style={{ marginBottom: "1rem" }}>
+          <Label check>
+            <Input type="checkbox" /> Remember me
+          </Label>
+        </FormGroup>
+        <Button
+          type="submit"
+          color="primary"
+          style={{
+            width: "100%",
+            padding: "10px",
+            borderRadius: "4px",
+            backgroundColor: "#007bff",
+            border: "none",
+          }}
+        >
+          Sign up
+        </Button>
+      </Form>
+      <FormText style={{ textAlign: "center", marginTop: "1rem" }}>
+        Already have an account? <Link to="/signin">Sign in</Link>
       </FormText>
-
-      <Button type="submit" color="success" outline style={{ marginLeft: "30vw" }}>
-        Sign Up
-      </Button>
-    </Form>
+    </Container>
   );
 };
 

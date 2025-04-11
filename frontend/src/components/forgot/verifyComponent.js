@@ -1,4 +1,3 @@
-// verifyComponent.js
 import React, { useState } from "react";
 import {
   Button,
@@ -10,6 +9,7 @@ import {
   FormGroup,
   Label,
   Input,
+  Container,
 } from "reactstrap";
 import "./index.css";
 import { baseUrl } from "../../url";
@@ -70,10 +70,44 @@ const Forgot = () => {
   if (isLoading) return <WaveTopBottomLoading />;
 
   return (
-    <div>
-      <Form onSubmit={handleSubmit} style={{ margin: "10vh 10%" }}>
+    <Container
+      style={{
+        maxWidth: "400px",
+        margin: "auto",
+        marginTop: "10vh",
+        padding: "2rem",
+        border: "1px solid #ddd",
+        borderRadius: "8px",
+        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+        backgroundColor: "white",
+        textAlign: "center",
+      }}
+    >
+      <h3
+        style={{
+          marginBottom: "1.5rem",
+          fontSize: "1.8rem",
+          color: "#333",
+          fontWeight: "bold",
+        }}
+      >
+        Forgot Password
+      </h3>
+      <Form onSubmit={handleSubmit}>
         <FormGroup>
-          <Label for="email">Email</Label>
+          <Label
+            for="email"
+            style={{
+              //fontWeight: "bold",
+              fontSize: "1rem",
+              color: "#333",
+              marginBottom: "0.5rem",
+              display: "block",
+              textAlign: "left",
+            }}
+          >
+            Email Address
+          </Label>
           <Input
             type="email"
             name="email"
@@ -82,14 +116,26 @@ const Forgot = () => {
             required
             placeholder="Enter Registered Email"
             autoComplete="off"
+            style={{
+              borderRadius: "6px",
+              border: "1px solid #ccc",
+              padding: "12px",
+              fontSize: "1rem",
+            }}
           />
         </FormGroup>
         <Button
           type="submit"
-          size="md"
-          outline
-          style={{ marginTop: "5%", marginLeft: "20vw", marginBottom: "5%" }}
-          color="danger"
+          color="primary"
+          style={{
+            width: "100%",
+            padding: "12px",
+            borderRadius: "6px",
+            backgroundColor: "#007bff",
+            border: "none",
+            fontSize: "1rem",
+            fontWeight: "bold",
+          }}
         >
           Submit
         </Button>
@@ -97,7 +143,9 @@ const Forgot = () => {
 
       <Modal isOpen={status} toggle={toggle}>
         <ModalHeader toggle={toggle}>Verification</ModalHeader>
-        <ModalBody>{message}</ModalBody>
+        <ModalBody style={{ fontSize: "1rem", color: "#333" }}>
+          {message}
+        </ModalBody>
         <ModalFooter>
           {message === "Cannot Find Email given !!!!" ||
           message === "Only @gmail.com emails are allowed" ? (
@@ -111,7 +159,7 @@ const Forgot = () => {
           )}
         </ModalFooter>
       </Modal>
-    </div>
+    </Container>
   );
 };
 

@@ -4,139 +4,164 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>Semester Question Paper</title>
     <style>
-      .code {
-        margin-top: -20px;
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
       }
+
+      header {
+        padding: 10px 20px;
+      }
+
+      .code {
+        display: flex;
+        justify-content: space-between;
+        margin-top: -20px;
+      }
+
+      .pcode {
+        margin: 10px 0;
+      }
+
       .regulation {
         border: 1px solid black;
-        margin-top: 15px;
-        margin-left: 20px;
-        margin-right: 20px;
         padding: 10px;
+        margin-top: 10px;
       }
-      .pcode {
-        margin: 10px;
-      }
+
       .cllgename {
         text-align: center;
-        /* margin: 0px 25%; */
         text-transform: uppercase;
         font-size: 1.5em;
         font-weight: bold;
-        margin: 1px;
+        margin: 5px 0;
       }
+
       .cllgetype {
         text-align: center;
         font-size: 1em;
-        font-weight: bolder;
+        font-weight: bold;
       }
+
       .examdetails {
         text-align: center;
-        margin: 3px;
-        font-weight: 500;
+        margin: 5px 0;
         font-size: 1.2em;
-      }
-      .subjectname {
-        text-transform: uppercase;
-        text-align: center;
         font-weight: 500;
-        font-size: 1.5em;
       }
+
+      .subjectname {
+        text-align: center;
+        text-transform: uppercase;
+        font-size: 1.5em;
+        font-weight: 600;
+      }
+
       .subjectdetail {
         text-align: center;
+        font-weight: normal;
+        font-size: 1.1em;
       }
+
       .examdet {
         display: flex;
         justify-content: space-between;
-        margin: 0px 10px;
-      }
-      .exampattern {
-        margin: 0px 10px;
-        text-align: justify;
+        margin: 10px;
         font-size: 1.2em;
       }
-      .secdetails {
-        /* border: 1px solid black; */
-        display: flex;
-        flex-direction: row;
-        margin: 10px;
-        width: 60%;
-        margin-left: auto;
-        font-size: 1.3em;
+
+      .exampattern {
+        font-size: 1.1em;
+        text-align: justify;
+        padding: 0 20px;
+        margin-top: 10px;
       }
+
+      .exampattern p {
+        margin: 4px 0;
+      }
+
+      .secdetails {
+        display: flex;
+        justify-content: space-between;
+        width: 90%;
+        margin: 15px auto 5px;
+        font-size: 1.3em;
+        font-weight: 600;
+      }
+
       .questions {
-        margin-left: 10px;
+        margin: 0 20px;
         display: flex;
         flex-direction: column;
       }
+
       .question {
-        margin: 7px;
+        margin: 7px 0;
         font-size: 1.6em;
       }
-      .multi{
+
+      .multi {
         padding-left: 20px;
       }
+
       .limiters {
         text-align: center;
         font-size: 1.2em;
+        font-weight: bold;
+        margin: 5px 0;
       }
     </style>
   </head>
+
   <body>
     <header>
       <section class="code">
         <div class="pcode">Code: {{code}}</div>
         <div class="regulation">{{regulation}}</div>
       </section>
+
       <section>
         <div class="cllgename">B V RAJU INSTITUTE OF TECHNOLOGY</div>
-        <div class="cllgetype">(UGC AUTONOMUOUS)</div>
+        <div class="cllgetype">(UGC AUTONOMOUS)</div>
         <div class="examdetails">
-          B.Tech {{Year}} Year {{sem}} Semester Regular/Supplementary
-          Examinations, {{month}} {{year}}
+          B.Tech {{Year}} Year {{sem}} Semester Regular/Supplementary Examinations, {{month}} {{year}}
         </div>
         <div class="subjectname">{{subjectname}}</div>
         <div class="subjectdetail">{{subjecttype}}</div>
       </section>
+
       <section class="examdet">
-        <h3>Time: {{time}} Hours</h3>
-        <h3>Max Marks: {{marks}}</h3>
+        <div>Time: {{time}} Hours</div>
+        <div>Max Marks: {{marks}}</div>
       </section>
+
       <section class="exampattern">
-        <p style="margin: 0px">
-          Note: This Question Papers Contains Two Parts A and B
-        </p>
-        <p style="margin: 0px">
-          Part A: is compulsory Which Carries 20marks. Answer all Questions in
-          Part A at one place only.
-        </p>
-        <p style="margin: 0px">
-          Part B consists of 10 Questions. Answer any five (one full question
-          from each unit). Each question carries 10 marks and may have a, b, c
-          as sub questions.
-        </p>
+        <p><strong>Note:</strong> This Question Paper Contains Two Parts A and B.</p>
+        <p>Part A is compulsory and carries 20 marks. Answer all questions in Part A at one place only.</p>
+        <p>Part B consists of 10 questions. Answer any five (one full question from each unit). Each question carries 10 marks and may have a, b, c as sub-questions.</p>
       </section>
     </header>
-    <div>
+
+    <main>
       <section>
-        <section class="secdetails">
-          <div>Part - A</div>
-          <div style="margin-left: auto">(2 x 10 = 20)</div>
-        </section>
+        <div class="secdetails">
+          <span>Part - A</span>
+          <span>(2 x 10 = 20)</span>
+        </div>
         {{small squestion}}
       </section>
+
       <section>
-        <section class="secdetails">
-          <div>Part - B</div>
-          <div style="margin-left: auto">(5 x 10 = 50)</div>
-        </section>
+        <div class="secdetails">
+          <span>Part - B</span>
+          <span>(5 x 10 = 50)</span>
+        </div>
         {{large lquestion}}
       </section>
-    </div>
+    </main>
   </body>
 </html>

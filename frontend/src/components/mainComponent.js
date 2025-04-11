@@ -1,5 +1,5 @@
-import React, { Component } from "react";
-import { Switch, Route, Redirect } from "react-router-dom";
+import React from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 import Signup from "./signup/signupComponent";
 import Confirmation from "./signup/confirmationComponent";
@@ -21,66 +21,74 @@ import AdminHome from "./Admin/adminHome";
 
 import localStorage from "local-storage";
 
-// 🔁 Unified PrivateRoute with role-based access
-const PrivateRoute = ({ component: Component, adminOnly = false, ...rest }) => (
-  <Route
-    {...rest}
-    render={(props) => {
-      const token = localStorage.get("token");
-      const user = localStorage.get("user");
+const PrivateRoute = ({ children, adminOnly = false }) => {
+  const token = localStorage.get("token");
+  const user = localStorage.get("user");
 
-      if (!token) {
-        return <Redirect to="/home" />;
-      }
+  if (!token) return <Navigate to="/home" />;
+  if (adminOnly && (!user || !user.admin)) return <Navigate to="/home" />;
 
-      if (adminOnly && (!user || !user.admin)) {
-        return <Redirect to="/home" />;
-      }
+  return children;
+};
 
-      return <Component {...props} />;
-    }}
-  />
-);
+const Main = () => {
+  const user = localStorage.get("user");
+  const token = localStorage.get("token");
 
-class Main extends Component {
-  render() {
-    const user = localStorage.get("user");
-    const token = localStorage.get("token");
+  const nav = token
+    ? user?.admin
+      ? <AdminLoginNav user={user} />
+      : <LoginNav user={user} />
+    : <SignNav />;
 
-    // 🔁 Dynamic Nav based on auth role
-    const nav = token ? (user?.admin ? <AdminLoginNav user={user} /> : <LoginNav user={user} />) : <SignNav />;
+  return (
+    <>
+      {nav}
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/home" element={<Home />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/user/:userId" element={<Confirmation />} />
+        <Route path="/signin" element={<Login />} />
+        <Route path="/forgot/:userId" element={<Update />} />
+        <Route path="/forgot" element={<Forgot />} />
 
-    return (
-      <div>
-        {nav}
-        <Switch>
-          {/* Public Routes */}
-          <Route path="/home" component={Home} />
-          <Route path="/signup" component={Signup} />
-          <Route path="/user/:userId" render={({ match }) => <Confirmation {...match} />} />
-          <Route path="/signin" render={({ match }) => <Login {...match} />} />
-          <Route path="/forgot/:userId" render={({ match }) => <Update {...match} />} />
-          <Route path="/forgot" component={Forgot} />
+        {/* Admin Routes */}
+        <Route path="/department" element={
+          <PrivateRoute adminOnly><Department /></PrivateRoute>
+        } />
+        <Route path="/subject" element={
+          <PrivateRoute adminOnly><Subject /></PrivateRoute>
+        } />
+        <Route path="/profile" element={
+          <PrivateRoute adminOnly><Profile /></PrivateRoute>
+        } />
+        <Route path="/adminhome" element={
+          <PrivateRoute adminOnly><AdminHome /></PrivateRoute>
+        } />
 
-          {/* Admin Routes */}
-          <PrivateRoute path="/department" component={Department} adminOnly />
-          <PrivateRoute path="/subject" component={Subject} adminOnly />
-          <PrivateRoute path="/profile" component={Profile} adminOnly />
-          <PrivateRoute path="/home" component={AdminHome} adminOnly />
+        {/* Teacher Routes */}
+        <Route path="/insert" element={
+          <PrivateRoute><Alpha /></PrivateRoute>
+        } />
+        <Route path="/generate" element={
+          <PrivateRoute><Generate /></PrivateRoute>
+        } />
+        <Route path="/edit" element={
+          <PrivateRoute><Options /></PrivateRoute>
+        } />
+        <Route path="/landing" element={
+          <PrivateRoute><Landing /></PrivateRoute>
+        } />
+        <Route path="/profile" element={
+          <PrivateRoute><Profile /></PrivateRoute>
+        } />
 
-          {/* Authenticated Teacher Routes */}
-          <PrivateRoute exact path="/insert" component={Alpha} />
-          <PrivateRoute exact path="/generate" component={Generate} />
-          <PrivateRoute exact path="/edit" component={Options} />
-          <PrivateRoute exact path="/landing" component={Landing} />
-          <PrivateRoute exact path="/profile" component={Profile} />
-
-          {/* Default fallback */}
-          <Redirect to={token ? "/landing" : "/home"} />
-        </Switch>
-      </div>
-    );
-  }
-}
+        {/* Default fallback */}
+        <Route path="*" element={<Navigate to={token ? "/landing" : "/home"} />} />
+      </Routes>
+    </>
+  );
+};
 
 export default Main;

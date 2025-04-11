@@ -4,48 +4,82 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
+    <title>First MID Question Paper</title>
     <style>
-      .main {
-        margin: 20px 10px;
-        width: 120%;
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
       }
+
+      .main {
+        padding: 20px;
+        width: 100%;
+      }
+
       .sec1 {
         display: flex;
-        margin-bottom: 4px;
-        margin-left: 20%;
+        align-items: center;
+        justify-content: center;
+        gap: 2em;
+        margin-bottom: 10px;
       }
+
       .heading {
-        padding-left: 2em;
-        /* padding-top: 0.4em; */
         text-align: center;
-        font-size: 1.5em;
+        font-size: 1.6em;
+        font-weight: bold;
+        line-height: 1.5;
+      }
+
+      .exam-title {
+        text-align: center;
+        font-size: 1.6em;
+        font-weight: 800;
+        margin: 20px 0;
+      }
+
+      .details {
+        display: flex;
+        justify-content: space-around;
+        margin-bottom: 20px;
+      }
+
+      .details table td {
+        font-size: 1.4em;
+        padding: 4px 8px;
+      }
+
+      .details table td:first-child {
         font-weight: bold;
       }
-      .details {
-        margin: 0px;
-        display: flex;
-        justify-content: left;
+
+      .instruction {
+        text-align: center;
+        font-weight: bold;
+        font-size: 1.5em;
+        margin-bottom: 15px;
       }
-      .part1 {
-        width: 50%;
-        padding-left: 10%;
-      }
-      .part2 {
-        width: 50%;
-      }
+
       .quetable {
-        border: 1px solid black;
+        width: 85%;
+        margin: auto;
         border-collapse: collapse;
-        padding: 2px;
-        margin-left: 8%;
+        font-size: 1.3em;
       }
-      .tdcenter{
-        min-width: 80vw;
-        max-width: 90vw;
-        font-size: 1.6em;
+
+      .quetable th,
+      .quetable td {
+        border: 1px solid black;
+        padding: 8px;
+        vertical-align: top;
+      }
+
+      .tdcenter {
         word-wrap: break-word;
+        font-size: 1.5em;
       }
+
       .cen {
         text-align: center;
         font-size: 1.4em;
@@ -62,54 +96,63 @@
           Vishnupur, Narsapur, Medak
         </div>
       </section>
-      <section style="margin: 1em;padding-left: 25%; margin: 20px; font-size: 1.6em;font-weight: 800;">
-        B.Tech {{sem}} Semester First MID-{{month}} {{Year}}
+
+      <section class="exam-title">
+        B.Tech {{sem}} Semester First MID - {{month}} {{Year}}
       </section>
+
       <section class="details">
         <div class="part1">
           <table>
             <tr>
-              <td style="font-weight: bold;font-size: 1.6em;">Year</td>
-              <td style="font-size: 1.6em;">: {{year}}</td>
+              <td>Year</td>
+              <td>: {{year}}</td>
             </tr>
             <tr>
-              <td style="font-weight: bold;font-size: 1.6em;">subject</td>
-              <td style="font-size: 1.6em;">: {{subjectname}}</td>
+              <td>Subject</td>
+              <td>: {{subjectname}}</td>
             </tr>
             <tr>
-              <td style="font-weight: bold;font-size: 1.6em;">Time</td>
-              <td style="font-size: 1.6em;">: {{starttime}} to {{endtime}}</td>
+              <td>Time</td>
+              <td>: {{starttime}} to {{endtime}}</td>
             </tr>
           </table>
         </div>
+
         <div class="part2">
           <table>
             <tr>
-              <td style="font-weight: bold;font-size: 1.6em;">Branch</td>
-              <td style="font-size: 1.6em;">: {{branch}}</td>
+              <td>Branch</td>
+              <td>: {{branch}}</td>
             </tr>
             <tr>
-              <td style="font-weight: bold;font-size: 1.6em;">Date</td>
-              <td style="font-size: 1.6em;">: {{date}}</td>
+              <td>Date</td>
+              <td>: {{date}}</td>
             </tr>
             <tr>
-              <td style="font-weight: bold;font-size: 1.6em;">Marks</td>
-              <td style="font-size: 1.6em;">: {{marks}}</td>
+              <td>Marks</td>
+              <td>: {{marks}}</td>
             </tr>
           </table>
         </div>
       </section>
-      <section class="data">
-        <main style="margin: 1em;padding-left: 20%;font-weight: bold;font-size: 1.6em;">
-          Answer any three Questions. All Questions carry equal marks
-        </main>
+
+      <section>
+        <div class="instruction">
+          Answer any three Questions. All Questions carry equal marks.
+        </div>
+
         <table class="quetable">
-          <tr>
-            <th class="quetable">Q.No</th>
-            <th class="quetable">Question Description</th>
-            <th class="quetable">Marks</th>
-          </tr>
-          {{question questions}}
+          <thead>
+            <tr>
+              <th>Q.No</th>
+              <th>Question Description</th>
+              <th>Marks</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{question questions}}
+          </tbody>
         </table>
       </section>
     </div>
