@@ -1,138 +1,82 @@
-// landingComponent.js
 import React from "react";
 import {
   Provider,
   Heading,
   Subhead,
   Flex,
-  NavLink,
+  Box,
+  Text,
 } from "rebass";
-import { Row, Col } from "reactstrap";
-import {
-  Hero,
-  CallToAction,
-  ScrollDownIndicator,
-  Feature,
-  Contributor,
-  Checklist,
-  Section,
-} from "react-landing-page";
+import { Hero, CallToAction, Feature } from "react-landing-page";
 
 const LandingComponent = () => {
   return (
     <Provider>
+      {/* Hero Section */}
       <Hero
         color="white"
         backgroundImage="/landing1.jpg"
         bg="black"
         bgOpacity={0.5}
+        style={{
+          textAlign: "center",
+          padding: "50px 20px",
+        }}
       >
-        <Heading>Welcome to Question Paper Generator</Heading>
-        <Subhead fontSize={[2, 3]}>
+        <Heading fontSize={[5, 6]} color="white">
+          Welcome to Question Paper Generator
+        </Heading>
+        <Subhead fontSize={[2, 3]} color="white" mt={2}>
           Instant Unique Question Papers
         </Subhead>
-        <Flex mt={3}>
-          <CallToAction bg="green" mr={3} href="/insert">
+        <Flex mt={4} justifyContent="center">
+          <CallToAction href="/insert" mr={3} bg="green" color="white">
             Add Questions
           </CallToAction>
-          <CallToAction bg="red" href="/generate">
+          <CallToAction href="/generate" bg="red" color="white">
             Generate Paper
           </CallToAction>
         </Flex>
-        <ScrollDownIndicator />
       </Hero>
 
-      <Heading textAlign="center" mt={3}>
-        What is inside?
-      </Heading>
-      <Flex flexWrap="wrap" justifyContent="center">
-        <Feature icon="⌨" description="Insert New Questions for Subjects">
-          Insert
-        </Feature>
-        <Feature icon="💻" description="Generate Unique Question Papers">
-          Generate
-        </Feature>
-        <Feature icon="⌫" description="Select, Modify and Delete Questions">
-          Edit
-        </Feature>
-      </Flex>
+      {/* Features Section */}
+      <Box bg="lightgray" py={5}>
+        <Heading textAlign="center" fontSize={[4, 5]} color="black">
+          What is inside?
+        </Heading>
+        <Flex flexWrap="wrap" justifyContent="center" mt={4}>
+          <Feature icon="⌨" description="Insert New Questions for Subjects">
+            Insert
+          </Feature>
+          <Feature icon="💻" description="Generate Unique Question Papers">
+            Generate
+          </Feature>
+          <Feature icon="⌫" description="Select, Modify and Delete Questions">
+            Edit
+          </Feature>
+        </Flex>
+      </Box>
 
-      <Heading textAlign="center">Why do this Project?</Heading>
-      <Subhead textAlign="center">maybe this will help</Subhead>
-      <Checklist
-        style={{ padding: "2em" }}
-        checkmark="★"
-        children={[
-          "Automate the Task",
-          "Instant Question Paper",
-          "Random Questions",
-        ]}
-      />
-
-      <Section
-        heading="Major Project"
-        subhead="Under the Guidance of "
-        width={1}
-      >
-        <Contributor
-          fullName="Mr. V. Pradeep Kumar"
-          title="Assistant Professor"
-          avatar="/guide.jpg"
-        />
-      </Section>
-
-      <Heading textAlign="center">Made by</Heading>
-      <Row>
-        <Col md={3} xs={6}>
-          <Contributor
-            fullName="Gireesh Chandra Busam"
-            title="17211A0581"
-            avatar="/gireesh.png"
-            className="d-flex flex-sm-column"
-          >
-            <Flex>
-              <NavLink href="https://github.com/gireeshchandra">
-                GitHub
-              </NavLink>
-            </Flex>
-          </Contributor>
-        </Col>
-        <Col md={3} xs={6}>
-          <Contributor
-            fullName="Ravi Teja Girijala"
-            title="17211A0582"
-            avatar="/linux.png"
-          >
-            <Flex>
-              <NavLink href="https://github.com/Raviteja582">
-                GitHub
-              </NavLink>
-            </Flex>
-          </Contributor>
-        </Col>
-        <Col md={3} xs={6}>
-          <Contributor
-            fullName="Naga Pavan Reddy"
-            title="17211A0599"
-            avatar="/np.png"
-          >
-            <Flex>
-              <NavLink href="#">GitHub</NavLink>
-            </Flex>
-          </Contributor>
-        </Col>
-        <Col md={3} xs={6}>
-          <Contributor
-            fullName="Kommu Naresh Tiger"
-            title="18215A0518"
-            avatar="/tiger.png"
-          >
-            <Flex>
-              <NavLink href="#">GitHub</NavLink>
-            </Flex>
-          </Contributor>
-        </Col>
-      </Row>
+      {/* Why This Project Section */}
+      <Box py={5} bg="white">
+        <Heading textAlign="center" fontSize={[4, 5]} color="black">
+          Why do this Project?
+        </Heading>
+        <Subhead textAlign="center" fontSize={[2, 3]} color="gray" mt={2}>
+          Maybe this will help
+        </Subhead>
+        <Flex flexWrap="wrap" justifyContent="center" mt={4}>
+          <Feature icon="★" description="Automate the Task">
+            Automation
+          </Feature>
+          <Feature icon="★" description="Instant Question Paper">
+            Instant Papers
+          </Feature>
+          <Feature icon="★" description="Random Questions">
+            Randomization
+          </Feature>
+        </Flex>
+      </Box>
     </Provider>
   );
 };

@@ -1,46 +1,113 @@
-import React from "react";
+// src/components/SignNav.js
+import React, { useState } from "react";
 import {
   Navbar,
   NavbarBrand,
   Nav,
   NavItem,
-  NavLink,
+  NavbarToggler,
+  Collapse,
+  Button,
+  Container,
 } from "reactstrap";
-import localStorage from "local-storage";
 import { Link } from "react-router-dom";
 
 const SignNav = () => {
-  if (localStorage.get("token")) return null;
+  const [isOpen, setIsOpen] = useState(false);
+  const toggle = () => setIsOpen(!isOpen);
 
   return (
-    <div style={{ width: "100vw", position: "sticky", top: 0, zIndex: 10 }}>
-      <Navbar color="light" light expand="md">
-        <NavbarBrand tag={Link} to="/home" style={{ color: "grey" }}>
-          <img src="/favicon.ico" alt="icon" width={50} /> QP Generator
-        </NavbarBrand>
+    <div style={{ position: "sticky", top: 0, zIndex: 10 }}>
+      <Navbar color="light" light expand="md" style={{ padding: "0.5rem 1rem" }}>
+        <Container>
+          {/* Brand on the left */}
+          <NavbarBrand
+            tag={Link}
+            to="/home"
+            style={{
+              color: "#333",
+              fontWeight: "bold",
+              fontSize: "1.5rem",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <img
+              src="/favicon.ico"
+              alt="icon"
+              width={40}
+              style={{ marginRight: "0.5rem" }}
+            />
+            QP Generator
+          </NavbarBrand>
 
-        <Nav className="ms-auto" navbar style={{ gap: "1.5rem" }}>
-          <NavItem>
-            <NavLink tag={Link} to="/signin" style={{ color: "grey" }}>
-              Login{" "}
-              <img
-                src="/img/login.png"
-                alt="login"
-                style={{ display: "inline", width: 20 }}
-              />
-            </NavLink>
-          </NavItem>
-          <NavItem>
-            <NavLink tag={Link} to="/signup" style={{ color: "grey" }}>
-              Signup{" "}
-              <img
-                src="/img/logout.png"
-                alt="signup"
-                style={{ display: "inline", width: 20 }}
-              />
-            </NavLink>
-          </NavItem>
-        </Nav>
+          <NavbarToggler onClick={toggle} />
+
+          <Collapse isOpen={isOpen} navbar className="justify-content-md-end">
+            {/* 
+              On mobile (under md):
+                - flex-column: stack items vertically
+                - align-items-center: center them horizontally
+              On md+ screens:
+                - flex-md-row: place them in a row
+                - 'justify-content-md-end': align to right
+            */}
+            <Nav
+              navbar
+              className="
+                w-100
+                flex-column flex-md-row
+                align-items-center
+                justify-content-center justify-content-md-end
+              "
+            >
+              {/* Login Button */}
+              <NavItem
+                className="mb-2 mb-md-0 mx-auto mx-md-0"
+                // 'mx-auto' centers item on small screens
+              >
+                <Button
+                  tag={Link}
+                  to="/signin"
+                  color="primary"
+                  style={{
+                    borderRadius: "8px",
+                    padding: "10px 20px",
+                    fontSize: "1rem",
+                    fontWeight: "bold",
+                    backgroundColor: "#007bff",
+                    border: "none",
+                    minWidth: "100px",
+                    marginRight: "1rem", // extra horizontal space for md+ screens
+                  }}
+                  className="mb-2 mb-md-0" // vertical spacing on small screens
+                >
+                  Login
+                </Button>
+              </NavItem>
+
+              {/* Signup Button */}
+              <NavItem className="mx-auto mx-md-0">
+                <Button
+                  tag={Link}
+                  to="/signup"
+                  color="primary"
+                  style={{
+                    borderRadius: "8px",
+                    padding: "10px 20px",
+                    fontSize: "1rem",
+                    fontWeight: "bold",
+                    backgroundColor: "#007bff",
+                    border: "none",
+                    minWidth: "100px",
+                  }}
+                >
+                  Signup
+                </Button>
+              </NavItem>
+            </Nav>
+          </Collapse>
+        </Container>
       </Navbar>
     </div>
   );

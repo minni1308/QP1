@@ -1,102 +1,98 @@
-const express = require("express");
-const teacherRouter = express.Router();
-const passport = require("passport");
+var express = require("express");
+var teacherRouter = express.Router();
+var passport = require("passport");
+
 const cors = require("../cors");
 const nodemailer = require("nodemailer");
-const Teacher = require("../../models/teachers");
+
+var teacher = require("../../models/teachers");
 
 teacherRouter.use(express.json());
 
 teacherRouter
-  .route("/")
-  .options(cors.corsWithOptions, (req, res) => {
-    res.sendStatus(200);
-  })
-  .get(cors.cors, (req, res) => {
-    res.statusCode = 403;
-    res.end("GET operation is not permitted");
-  })
-  .post(cors.corsWithOptions, (req, res, next) => {
-    Teacher.register(
-      new Teacher({ username: req.body.email }),
-      req.body.password,
-      (err, user) => {
-        if (err) {
-          res.statusCode = 200;
-          res.setHeader("Content-Type", "application/json");
-          return res.json({
-            success: false,
-            message: "A user with that email already exists.",
-          });
-        }
-
-        user.name = req.body.name;
-        user.phno = req.body.phno;
-
-        user.save((err, savedUser) => {
-          if (err) {
-            res.statusCode = 500;
-            res.setHeader("Content-Type", "application/json");
-            return res.json({
-              success: false,
-              message:
-                "Failed to save user data. Please contact the administrator.",
-            });
-          }
-
-          // ✅ Setup mail transporter
-          const transporter = nodemailer.createTransport({
-            service: "gmail",
-            auth: {
-              user: "qpgeneratorbvrit@gmail.com", // Replace with your verified email
-              pass: "uamaeefhzwwnlrtq",            // Replace with your Gmail App Password
-            },
-          });
-
-          const verificationUrl = `http://localhost:3000/user/${savedUser._id}`;
-
-          const mailOptions = {
-            from: "no-replyAdmin <qpgeneratorbvrit@gmail.com>",
-            to: savedUser.username,
-            subject: "Confirm Your Registration",
-            text: "Click the link below to complete your registration.",
-            html: `<p>To complete the registration process, please click the link below:</p>
-                   <a href="${verificationUrl}">Verify Email</a>`,
-          };
-
-          // ✅ Send the verification email
-          transporter
-            .sendMail(mailOptions)
-            .then((info) => {
-              console.log("✅ Email sent:", info.response);
-              res.statusCode = 200;
-              res.setHeader("Content-Type", "application/json");
-              res.json({
-                success: true,
-                status: "Registration successful! Please check your email.",
-              });
-            })
-            .catch((err) => {
-              console.error("❌ Email sending error:", err);
-              res.statusCode = 500;
-              res.setHeader("Content-Type", "application/json");
-              res.json({
-                success: false,
-                message:
-                  "Could not send verification email. Please contact admin.",
-              });
-            });
-        });
-      }
-    );
-  })
-  .put(cors.corsWithOptions, (req, res) => {
-    res.statusCode = 403;
-    res.end("PUT operation is not permitted");
-  })
-  .delete(cors.corsWithOptions, (req, res) => {
-    res.statusCode = 403;
-    res.end("DELETE operation is not permitted");
-  });
-
+    .route("/")
+    .options(cors.corsWithOptions, (req, res) => {
+        res.sendStatus(200);
+    })
+    .get(cors.cors, (req, res, next) => {
+        res.statusCode = 403;
+        res.end("Get operation is not permitted");
+    })
+    .post(cors.corsWithOptions, (req, res, next) => {
+        teacher.register(
+            new teacher({ username: req.body.email }),
+            req.body.password,
+            (err, user) => {
+                if (err) {
+                    res.statusCode = 200;
+                    res.setHeader("Content-Type", "application/json");
+                    res.json({
+                        success: false,
+                        message: 'Already User with Email is Present'
+                    });
+                } else {
+                    user.name = req.body.name;
+                    user.phno = req.body.phno;
+                    user.save((err, user) => {
+                        if (err) {
+                            res.statusCode = 200;
+                            res.setHeader("Content-Type", "application-json");
+                            res.json({
+                                success: false,
+                                message: 'Cannot Create Account with Given Details, Contact Admin.'
+                            });
+                        } else {
+                            let transporter = nodemailer.createTransport({
+                                service: "gmail",
+                                auth: {
+                                    user: "qpgeneratorbvrit@gmail.com",
+                                    pass: "uamaeefhzwwnlrtq",
+                                },
+                            });
+                            // var url = 'https://questionpaper07.herokuapp.com/user/'+user._id;
+                            var url =
+                                "http://localhost:3000/user/" +
+                                user._id;
+                            var mailOptions = {
+                                from:
+                                    "no-replyAdmin <qpgeneratorbvrit@gmail.com>",
+                                to: user.username,
+                                subject: "Confirmation of Registration",
+                                text: "You are Successful Registered",
+                                html: `<p>To complete the registration process, please click on the link below</p><br><br><a href=${url}>Register</a>`,
+                            };
+                            transporter
+                                .sendMail(mailOptions)
+                                .then((err, info) => {
+                                    if (!err) {
+                                        res.statusCode = 200;
+                                        res.setHeader("Content-Type", "application/json");
+                                        res.json({
+                                            success: false,
+                                            message: "Cannot Sent Mail to your email-id, Please Provide a Valid Eamil ID."
+                                        });
+                                    } else {
+                                        res.statusCode = 200;
+                                        res.setHeader("Content-Type", "application/json");
+                                        res.json({
+                                            success: true,
+                                            status: "Registration Successful!",
+                                        });
+                                    }
+                                })
+                                .catch((err) => next(err));
+                        }
+                    });
+                }
+            }
+        );
+    })
+    .put(cors.corsWithOptions, (req, res, next) => {
+        res.statusCode = 403;
+        res.end("PUT operation is not permitted");
+    })
+    .delete(cors.corsWithOptions, (req, res, next) => {
+        res.statusCode = 403;
+        res.end("DELETE operation is not permitted");
+    });
 module.exports = teacherRouter;
