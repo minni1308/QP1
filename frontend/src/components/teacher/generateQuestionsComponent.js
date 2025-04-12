@@ -28,6 +28,7 @@ const GenerateQuestionsComponent = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [generatedQuestions, setGeneratedQuestions] = useState([]);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Fetch subjects when component mounts
   useEffect(() => {
@@ -93,10 +94,8 @@ const GenerateQuestionsComponent = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsProcessing(true);
     setError("");
-    setSuccess(false);
-    setGeneratedQuestions([]);
 
     const formDataToSend = new FormData();
     formDataToSend.append("subject", formData.subject);
@@ -108,7 +107,8 @@ const GenerateQuestionsComponent = () => {
     }
 
     try {
-      const response = await fetch(`${baseUrl}/teacher/generate-questions/generate`, {
+      console.log("Gemini API Key present:", !!process.env.GEMINI_API_KEY);
+      const response = await fetch(`${baseUrl}/teacher/generate`, {
         method: "POST",
         body: formDataToSend,
       });
@@ -116,7 +116,7 @@ const GenerateQuestionsComponent = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Navigate to the display component with the generated questions
+        // Navigate to display page with the generated questions
         navigate('/teacher/display-generated-questions', {
           state: {
             questions: data.questions,
@@ -130,7 +130,7 @@ const GenerateQuestionsComponent = () => {
     } catch (err) {
       setError("An error occurred while generating questions");
     } finally {
-      setIsLoading(false);
+      setIsProcessing(false);
     }
   };
 
@@ -272,12 +272,21 @@ const GenerateQuestionsComponent = () => {
         <Button
           color="primary"
           type="submit"
-          disabled={isLoading}
+          disabled={isProcessing}
           style={{ width: "100%", marginTop: "1rem" }}
         >
-          {isLoading ? "Generating..." : "Generate Questions"}
+          {isProcessing ? "Generating..." : "Generate Questions"}
         </Button>
       </Form>
+
+      {isProcessing && (
+        <div className="text-center mt-4">
+          <div className="spinner-border text-primary" role="status">
+            <span className="sr-only">Processing...</span>
+          </div>
+          <p className="mt-2">Generating questions... This may take a few moments.</p>
+        </div>
+      )}
 
       {generatedQuestions.length > 0 && (
         <div style={{ marginTop: "2rem" }}>
