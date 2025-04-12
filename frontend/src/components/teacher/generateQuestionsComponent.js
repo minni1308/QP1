@@ -17,13 +17,11 @@ const GenerateQuestionsComponent = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     subject: "",
-    chapter: "",
     difficulty: "easy",
     numberOfQuestions: 5,
     content: "",
   });
   const [subjects, setSubjects] = useState([]);
-  const [chapters, setChapters] = useState([]);
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -56,27 +54,6 @@ const GenerateQuestionsComponent = () => {
         });
     }
   }, [subjects.length]);
-
-  // Add useEffect for chapters when subject changes
-  useEffect(() => {
-    if (formData.subject) {
-      setIsLoading(true);
-      // This is a placeholder - you'll need to implement the actual API endpoint
-      fetch(`${baseUrl}/teacher/chapters/${formData.subject}`)
-        .then(res => res.json())
-        .then(data => {
-          setChapters(data);
-          setIsLoading(false);
-        })
-        .catch(err => {
-          console.error("Error fetching chapters:", err);
-          setError("Failed to fetch chapters");
-          setIsLoading(false);
-        });
-    } else {
-      setChapters([]);
-    }
-  }, [formData.subject]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -122,7 +99,6 @@ const GenerateQuestionsComponent = () => {
 
     const formDataToSend = new FormData();
     formDataToSend.append("subject", formData.subject);
-    formDataToSend.append("chapter", formData.chapter);
     formDataToSend.append("difficulty", formData.difficulty);
     formDataToSend.append("numberOfQuestions", formData.numberOfQuestions);
     formDataToSend.append("content", formData.content);
@@ -140,12 +116,11 @@ const GenerateQuestionsComponent = () => {
       const data = await response.json();
 
       if (response.ok) {
-        // Navigate to display page with the generated questions and metadata
+        // Navigate to display page with the generated questions
         navigate('/teacher/display-generated-questions', {
           state: {
             questions: data.questions,
             subject: formData.subject,
-            chapter: formData.chapter,
             difficulty: formData.difficulty
           }
         });
@@ -201,26 +176,6 @@ const GenerateQuestionsComponent = () => {
                 {subjects.map((subject) => (
                   <option key={subject.id} value={subject.code}>
                     {subject.name} ({subject.code})
-                  </option>
-                ))}
-              </Input>
-            </FormGroup>
-
-            <FormGroup>
-              <Label for="chapter">Chapter</Label>
-              <Input
-                type="select"
-                name="chapter"
-                id="chapter"
-                value={formData.chapter}
-                onChange={handleInputChange}
-                required
-                disabled={!formData.subject}
-              >
-                <option value="">Select a chapter</option>
-                {chapters.map((chapter) => (
-                  <option key={chapter.id} value={chapter.id}>
-                    {chapter.name}
                   </option>
                 ))}
               </Input>

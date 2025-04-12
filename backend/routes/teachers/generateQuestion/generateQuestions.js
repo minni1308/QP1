@@ -86,77 +86,90 @@ async function generateQuestionsWithGemini(content, numQuestions, difficulty) {
 
     // Prepare the prompt
     const prompt = `Generate ${numQuestions} descriptive questions based on the following content.
-                    Make the questions ${difficulty} difficulty level.
-                    Format your response as a JSON array of objects. Each object should have:
-                    - "text": the question text
+Make the questions easy,medium,hard difficulty level.
+Format your response as a JSON object with three arrays: easy, medium, and hard, where each array contains descriptive questions.
 
 Content to generate questions from:
 ${content}
 
 Remember to:
 - Make questions clear and thought-provoking
-- Make them appropriate for ${difficulty} level
-- Questions should encourage critical thinking
+- Make them appropriate for each difficulty level
+- Test understanding and analytical skills
+- Avoid yes/no questions
 
-Example format:
-[
-  {
-    "text": "Analyze the key concepts discussed in the content and explain their significance in detail."
-  },
-  {
-    "text": "Compare and contrast the main ideas presented in the text, providing specific examples to support your analysis."
-  }
-]`;
+The response MUST be in this exact format:
+{
+  "easy": [
+    "",
+    ""
+  ],
+  "medium": [
+    "",
+    ""
+  ],
+  "hard": [
+    "",
+    ""
+  ]
+}`;
 
     console.log("Sending request to Gemini API...");
     const result = await model.generateContent(prompt);
     console.log("Received response from Gemini API");
     const response = result.response;
-    const rawText = response.text();
+    const text = response.text();
     
-    // Log the raw text for debugging
-    console.log("Raw Gemini response:", rawText);
+    console.log("Raw Gemini response:", text);
 
-    // Clean up the response text
-    const cleanedText = rawText
-      .replace(/^```json\s*/i, "")  // remove leading ```json
-      .replace(/^```/i, "")         // remove leading ```
-      .replace(/```$/i, "")         // remove trailing ```
+    // Clean the response text
+    const cleanedText = text
+      .replace(/^```json\s*/i, "")
+      .replace(/^```/i, "")
+      .replace(/```$/i, "")
       .trim();
-
-    console.log("Cleaned text:", cleanedText);
 
     try {
       const parsedQuestions = JSON.parse(cleanedText);
 
-      // Basic validation
-      if (!Array.isArray(parsedQuestions)) {
-        throw new Error("Response is not an array");
+      // Validate the response format
+      if (!parsedQuestions || typeof parsedQuestions !== 'object') {
+        throw new Error("Response is not a valid JSON object");
       }
 
-      // Validate each question object
-      parsedQuestions.forEach((question, index) => {
-        if (!question.text || typeof question.text !== 'string') {
-          throw new Error(`Invalid question format at index ${index}: missing or invalid text property`);
+      // Validate that we have all difficulty levels
+      const requiredLevels = ['easy', 'medium', 'hard'];
+      for (const level of requiredLevels) {
+        if (!parsedQuestions[level] || !Array.isArray(parsedQuestions[level])) {
+          throw new Error(`Missing or invalid '${level}' questions array`);
         }
-        // Ensure the question is actually a question
-        if (!question.text.trim().endsWith('?') && !question.text.trim().toLowerCase().startsWith('explain') && !question.text.trim().toLowerCase().startsWith('analyze') && !question.text.trim().toLowerCase().startsWith('describe')) {
-          console.warn(`Warning: Question at index ${index} might not be properly formatted as a question`);
+      }
+
+      // Validate that each array has questions
+      for (const level of requiredLevels) {
+        if (parsedQuestions[level].length === 0) {
+          throw new Error(`No questions generated for '${level}' level`);
         }
-      });
+        
+        // Validate that each question is a non-empty string
+        parsedQuestions[level].forEach((question, index) => {
+          if (typeof question !== 'string' || question.trim().length === 0) {
+            throw new Error(`Invalid question at index ${index} in '${level}' array`);
+          }
+        });
+      }
 
       return parsedQuestions;
     } catch (parseError) {
       console.error("Error parsing Gemini response:", parseError);
-      console.error("Attempted to parse text:", cleanedText);
-      throw new Error("Failed to parse generated questions: " + parseError.message);
+      throw new Error(`Failed to parse generated questions: ${parseError.message}`);
     }
   } catch (error) {
-    console.error("Gemini API Error:", error);
-    if (error.message.includes("API_KEY_INVALID")) {
-      throw new Error("Invalid API key. Please check your GEMINI_API_KEY environment variable.");
+    console.error('Gemini API Error:', error);
+    if (error.message.includes('API_KEY_INVALID')) {
+      throw new Error('Invalid API key. Please check your GEMINI_API_KEY environment variable.');
     }
-    throw new Error("Error generating questions with Gemini: " + error.message);
+    throw new Error('Error generating questions with Gemini: ' + error.message);
   }
 }
 
