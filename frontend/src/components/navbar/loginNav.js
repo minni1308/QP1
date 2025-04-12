@@ -25,22 +25,22 @@ const LoginNav = () => {
         <Collapse isOpen={isOpen} navbar>
           <Nav className="ms-auto" navbar>
             <NavItem>
-              <NavLink tag={Link} to="/insert" style={{ color: "gray" }}>
+              <NavLink tag={Link} to="/teacher/insert" style={{ color: "gray" }}>
                 Insert
               </NavLink>
             </NavItem>
             <NavItem>
-              <NavLink tag={Link} to="/generate" style={{ color: "gray" }}>
+              <NavLink tag={Link} to="/teacher/generate" style={{ color: "gray" }}>
                 Generate
               </NavLink>
             </NavItem>
             <NavItem>
-              <NavLink tag={Link} to="/edit" style={{ color: "gray" }}>
+              <NavLink tag={Link} to="/teacher/edit" style={{ color: "gray" }}>
                 Edit
               </NavLink>
             </NavItem>
             <NavItem>
-              <NavLink tag={Link} to="/profile" style={{ padding: "3%" }}>
+              <NavLink tag={Link} to="/teacher/profile" style={{ padding: "3%" }}>
                 <img
                   src="/img/user.png"
                   alt="user"

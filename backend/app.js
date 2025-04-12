@@ -46,6 +46,7 @@ const forgetUser = require('./routes/teachers/teacherForget');
 const subject = require('./routes/teachers/fetchSubjects');
 const question = require('./routes/teachers/teacherQuestion');
 const userAuth = require('./routes/teachers/userAuth');
+const verifyEmail = require('./routes/teachers/verifyEmail');
 
 // Question editing
 const easyEdit = require('./routes/teachers/editQuestions/easyEdit');
@@ -57,6 +58,9 @@ const semPaper = require('./routes/teachers/paperGenerator/getsem/getSemester');
 const mid1 = require('./routes/teachers/paperGenerator/getmid1/getMid1');
 const mid2 = require('./routes/teachers/paperGenerator/getmid2/getMid2');
 const schemaPaper = require('./routes/teachers/paperGenerator/getschema/getpaper');
+
+// generate questions
+const generateQuestionsRouter = require("./routes/teachers/generateQuestion/generateQuestions");
 
 // Admin routes
 const adminDepartment = require('./routes/admin/department');
@@ -73,6 +77,7 @@ app.use('/teacher/forgot', forgetUser);
 app.use('/teacher/subject', subject);
 app.use('/teacher/question', question);
 app.use('/user', userAuth);
+app.use('/verify', verifyEmail);
 
 app.use('/teacher/semPaper', semPaper);
 app.use('/teacher/mid1', mid1);
@@ -82,6 +87,8 @@ app.use('/teacher/schema', schemaPaper);
 app.use('/teacher/easy', easyEdit);
 app.use('/teacher/medium', mediumEdit);
 app.use('/teacher/hard', hardEdit);
+
+app.use('/teacher/generate', generateQuestionsRouter);
 
 app.use('/admin/department', adminDepartment);
 app.use('/admin/subject', adminSubject);

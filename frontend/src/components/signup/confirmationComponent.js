@@ -1,38 +1,43 @@
 import React, { useEffect, useState } from "react";
-import { baseUrl } from "../../url";
+import { useParams, useNavigate } from "react-router-dom";
 import { WaveTopBottomLoading } from "react-loadingg";
 import { Container, Alert, Button } from "reactstrap";
-import { Link } from "react-router-dom";
+import { baseUrl } from "../../url";
 
-const Confirmation = ({ url }) => {
-  const [status, setStatus] = useState("loading"); // "loading", "success", "failed", "error"
+const Confirmation = () => {
+  const { userId } = useParams();
+  const navigate = useNavigate();
+  const [verificationStatus, setVerificationStatus] = useState("loading");
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const check = async () => {
+    const verifyEmail = async () => {
       try {
-        const res = await fetch(baseUrl + url);
-        // Check if the HTTP response is OK
-        if (!res.ok) {
-          console.error("HTTP error:", res.status, res.statusText);
-          return setStatus("error");
-        }
-        const data = await res.json();
-        console.log("Verification response:", data);
-        if (data.success) {
-          setStatus("success");
+        const response = await fetch(`${baseUrl}/verify/${userId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (response.ok) {
+          setVerificationStatus("success");
         } else {
-          setStatus("failed");
+          setVerificationStatus("failed");
+          setError("Verification failed. Please try again.");
         }
-      } catch (error) {
-        console.error("Fetch error:", error);
-        setStatus("error");
+      } catch (err) {
+        setVerificationStatus("error");
+        setError("An error occurred during verification. Please try again later.");
       }
     };
 
-    check();
-  }, [url]);
+    if (userId) {
+      verifyEmail();
+    }
+  }, [userId]);
 
-  if (status === "loading") return <WaveTopBottomLoading />;
+  if (verificationStatus === "loading") return <WaveTopBottomLoading />;
 
   return (
     <Container
@@ -51,49 +56,72 @@ const Confirmation = ({ url }) => {
       <h1 style={{ marginBottom: "1rem", fontSize: "2rem", color: "#007bff" }}>
         QP Generator
       </h1>
-      {status === "success" && (
+      {verificationStatus === "success" && (
         <>
           <Alert color="success" style={{ fontSize: "1.2rem" }}>
-            ✅ Successfully Verified
+            ✅ Email Verified Successfully
           </Alert>
           <p style={{ fontSize: "1rem", color: "#555" }}>
-            You can now log in and start generating question papers.
+            Your email has been verified successfully. You can now log in to your account.
           </p>
+          <Button
+            color="primary"
+            onClick={() => navigate("/signin")}
+            style={{
+              marginTop: "2rem",
+              padding: "10px 20px",
+              borderRadius: "4px",
+              fontSize: "1rem",
+            }}
+          >
+            Go to Login
+          </Button>
         </>
       )}
-      {status === "failed" && (
+      {verificationStatus === "failed" && (
         <>
           <Alert color="danger" style={{ fontSize: "1.2rem" }}>
             ❌ Verification Failed
           </Alert>
           <p style={{ fontSize: "1rem", color: "#555" }}>
-            Please use the email you registered with.
+            {error || "The verification link is invalid or has expired."}
           </p>
+          <Button
+            color="primary"
+            onClick={() => navigate("/signin")}
+            style={{
+              marginTop: "2rem",
+              padding: "10px 20px",
+              borderRadius: "4px",
+              fontSize: "1rem",
+            }}
+          >
+            Go to Login
+          </Button>
         </>
       )}
-      {status === "error" && (
+      {verificationStatus === "error" && (
         <>
           <Alert color="warning" style={{ fontSize: "1.2rem" }}>
             ⚠️ An Error Occurred
           </Alert>
           <p style={{ fontSize: "1rem", color: "#555" }}>
-            Please report this to the site administrator.
+            {error || "Please try again later or contact support."}
           </p>
+          <Button
+            color="primary"
+            onClick={() => navigate("/signin")}
+            style={{
+              marginTop: "2rem",
+              padding: "10px 20px",
+              borderRadius: "4px",
+              fontSize: "1rem",
+            }}
+          >
+            Go to Login
+          </Button>
         </>
       )}
-      <Button
-        tag={Link}
-        to="/signin"
-        color="primary"
-        style={{
-          marginTop: "2rem",
-          padding: "10px 20px",
-          borderRadius: "4px",
-          fontSize: "1rem",
-        }}
-      >
-        Back to Login
-      </Button>
     </Container>
   );
 };

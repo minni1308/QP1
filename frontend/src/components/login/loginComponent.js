@@ -68,7 +68,7 @@ const Login = () => {
   if (isLoading) return <WaveTopBottomLoading />;
 
   if (success) {
-    navigate("/");
+    navigate("/teacher/landing");
     return null;
   }
 
