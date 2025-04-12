@@ -96,77 +96,65 @@ ${content}
 Remember to:
 - Make questions clear and thought-provoking
 - Make them appropriate for ${difficulty} level
-- Test understanding and analytical skills
+- Questions should encourage critical thinking
 
 Example format:
 [
   {
-    "text": "Analyze the key concepts discussed in the content...",
+    "text": "Analyze the key concepts discussed in the content and explain their significance in detail."
+  },
+  {
+    "text": "Compare and contrast the main ideas presented in the text, providing specific examples to support your analysis."
   }
 ]`;
 
-    // According to the API guide: pass your prompt in the "contents" structure
-    const payload = {
-      contents: [
-        {
-          parts: [{ text: prompt }]
-        }
-      ]
-    };
-
     console.log("Sending request to Gemini API...");
-    // Send the request
-    const result = await model.generateContent(payload);
+    const result = await model.generateContent(prompt);
     console.log("Received response from Gemini API");
-
-    // Extract the raw text from result
     const response = result.response;
     const rawText = response.text();
-
+    
     // Log the raw text for debugging
     console.log("Raw Gemini response:", rawText);
 
-    // --- NEW CODE BELOW: remove triple backticks before parsing ---
-    // The model might output something like:
-    // ```json
-    // [ ... ]
-    // ```
-    // So we strip them out:
+    // Clean up the response text
     const cleanedText = rawText
-      .replace(/^```json\s*/i, "") // remove leading ```json (case-insensitive)
-      .replace(/^```/i, "")        // remove leading ```
-      .replace(/```$/i, "")        // remove trailing ```
+      .replace(/^```json\s*/i, "")  // remove leading ```json
+      .replace(/^```/i, "")         // remove leading ```
+      .replace(/```$/i, "")         // remove trailing ```
       .trim();
 
-    // Now parse the cleaned text
+    console.log("Cleaned text:", cleanedText);
+
     try {
       const parsedQuestions = JSON.parse(cleanedText);
 
+      // Basic validation
       if (!Array.isArray(parsedQuestions)) {
         throw new Error("Response is not an array");
       }
 
       // Validate each question object
       parsedQuestions.forEach((question, index) => {
-        if (!question.text || !question.modelAnswer || !question.marks) {
-          throw new Error(`Invalid question format at index ${index}`);
+        if (!question.text || typeof question.text !== 'string') {
+          throw new Error(`Invalid question format at index ${index}: missing or invalid text property`);
         }
-        if (question.marks < 5 || question.marks > 10) {
-          throw new Error(`Invalid marks value for question ${index + 1}`);
+        // Ensure the question is actually a question
+        if (!question.text.trim().endsWith('?') && !question.text.trim().toLowerCase().startsWith('explain') && !question.text.trim().toLowerCase().startsWith('analyze') && !question.text.trim().toLowerCase().startsWith('describe')) {
+          console.warn(`Warning: Question at index ${index} might not be properly formatted as a question`);
         }
       });
 
       return parsedQuestions;
     } catch (parseError) {
       console.error("Error parsing Gemini response:", parseError);
-      throw new Error("Failed to parse generated questions");
+      console.error("Attempted to parse text:", cleanedText);
+      throw new Error("Failed to parse generated questions: " + parseError.message);
     }
   } catch (error) {
     console.error("Gemini API Error:", error);
     if (error.message.includes("API_KEY_INVALID")) {
-      throw new Error(
-        "Invalid API key. Please check your GEMINI_API_KEY environment variable."
-      );
+      throw new Error("Invalid API key. Please check your GEMINI_API_KEY environment variable.");
     }
     throw new Error("Error generating questions with Gemini: " + error.message);
   }
