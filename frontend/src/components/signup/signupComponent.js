@@ -100,15 +100,32 @@ const Signup = () => {
 
   if (submitted) {
     return (
-      <Container className="text-center mt-5">
-        <h1>QP Generator</h1>
-        <Alert color="success">
-          <h4>Thanks for signing up!</h4>
+      <Container
+        style={{
+          maxWidth: "500px",
+          margin: "auto",
+          marginTop: "5rem",
+          padding: "2rem",
+          border: "1px solid #ddd",
+          borderRadius: "8px",
+          boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+          backgroundColor: "white",
+          textAlign: "center",
+        }}
+      >
+        <h1 style={{ marginBottom: "1rem", fontSize: "2rem", color: "#007bff" }}>
+          QP Generator
+        </h1>
+        <Alert color="success" style={{ fontSize: "1.2rem" }}>
+          <h4>Account Created Successfully!</h4>
           <p>
-            Please verify your account using the link sent to your email
-            address.
+            A verification link has been sent to your email address. Please check your inbox and click on the link to verify your account.
           </p>
-          <Link to="/signin">Go to Login</Link>
+          <p style={{ marginTop: "1rem" }}>
+            <Link to="/signin" style={{ textDecoration: "underline" }}>
+              Go to Login
+            </Link>
+          </p>
         </Alert>
       </Container>
     );

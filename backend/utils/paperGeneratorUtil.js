@@ -115,6 +115,7 @@ async function generatePaperPdf({ req, res, templatePath, units, marks = '15', s
   const html = result;
 
   const browser = await puppeteer.launch({
+    executablePath: '/opt/homebrew/bin/chromium',
     args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
 

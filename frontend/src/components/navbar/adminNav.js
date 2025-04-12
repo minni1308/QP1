@@ -32,12 +32,12 @@ const AdminLoginNav = ({ user }) => {
         <Collapse isOpen={isOpen} navbar>
           <Nav className="ml-auto" navbar>
             <NavItem>
-              <NavLink tag={Link} to="/department">
+              <NavLink tag={Link} to="/admin/department">
                 Department
               </NavLink>
             </NavItem>
             <NavItem>
-              <NavLink tag={Link} to="/subject">
+              <NavLink tag={Link} to="/admin/subject">
                 Subjects
               </NavLink>
             </NavItem>
@@ -47,7 +47,7 @@ const AdminLoginNav = ({ user }) => {
                 {user?.user || "Admin"}
               </DropdownToggle>
               <DropdownMenu end>
-                <DropdownItem tag={Link} to="/profile">
+                <DropdownItem tag={Link} to="/admin/profile">
                   Profile
                 </DropdownItem>
                 <DropdownItem divider />

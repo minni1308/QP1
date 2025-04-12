@@ -6,6 +6,7 @@ import Confirmation from "./signup/confirmationComponent";
 import Login from "./login/loginComponent";
 import Home from "./home/homeComponent";
 import Landing from "./home/landingComponent";
+import TeacherLanding from "./teacher/teacherLandingComponent";
 import Forgot from "./forgot/verifyComponent";
 import Update from "./forgot/updateComponent";
 import SignNav from "./navbar/signNav";
@@ -14,6 +15,7 @@ import LoginNav from "./navbar/loginNav";
 import AdminLoginNav from "./navbar/adminNav";
 import Alpha from "./insert/alphaComponent";
 import Generate from "./generate/schemaComponent";
+import GenerateQuestions from "./teacher/generateQuestionsComponent";
 import Options from "./edit/optionComponent";
 import Department from "./Admin/department";
 import Subject from "./Admin/subject";
@@ -48,44 +50,53 @@ const Main = () => {
         {/* Public Routes */}
         <Route path="/home" element={<Home />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/user/:userId" element={<Confirmation />} />
+        <Route path="/verify/:userId" element={<Confirmation />} />
         <Route path="/signin" element={<Login />} />
         <Route path="/forgot/:userId" element={<Update />} />
         <Route path="/forgot" element={<Forgot />} />
+        <Route path="/" element={<Navigate to="/home" />} />
 
         {/* Admin Routes */}
-        <Route path="/department" element={
+        <Route path="/admin/department" element={
           <PrivateRoute adminOnly><Department /></PrivateRoute>
         } />
-        <Route path="/subject" element={
+        <Route path="/admin/subject" element={
           <PrivateRoute adminOnly><Subject /></PrivateRoute>
         } />
-        <Route path="/profile" element={
+        <Route path="/admin/profile" element={
           <PrivateRoute adminOnly><Profile /></PrivateRoute>
         } />
-        <Route path="/adminhome" element={
+        <Route path="/admin/home" element={
           <PrivateRoute adminOnly><AdminHome /></PrivateRoute>
         } />
 
         {/* Teacher Routes */}
-        <Route path="/insert" element={
+        <Route path="/teacher/insert" element={
           <PrivateRoute><Alpha /></PrivateRoute>
         } />
-        <Route path="/generate" element={
+        <Route path="/teacher/generate" element={
           <PrivateRoute><Generate /></PrivateRoute>
         } />
-        <Route path="/edit" element={
+        <Route path="/teacher/generate-questions" element={
+          <PrivateRoute><GenerateQuestions /></PrivateRoute>
+        } />
+        <Route path="/teacher/edit" element={
           <PrivateRoute><Options /></PrivateRoute>
         } />
-        <Route path="/landing" element={
-          <PrivateRoute><Landing /></PrivateRoute>
+        <Route path="/teacher/landing" element={
+          <PrivateRoute><TeacherLanding /></PrivateRoute>
         } />
-        <Route path="/profile" element={
+        <Route path="/teacher/profile" element={
           <PrivateRoute><Profile /></PrivateRoute>
         } />
 
-        {/* Default fallback */}
-        <Route path="*" element={<Navigate to={token ? "/landing" : "/home"} />} />
+        {/* Default fallback - only redirect if not a verification path */}
+        <Route path="*" element={({ location }) => {
+          if (location.pathname.startsWith('/verify/')) {
+            return null; // Don't redirect verification paths
+          }
+          return <Navigate to={token ? (user?.admin ? "/admin/home" : "/teacher/landing") : "/home"} />;
+        }} />
       </Routes>
     </>
   );

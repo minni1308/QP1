@@ -30,10 +30,10 @@ const LandingComponent = () => {
           Instant Unique Question Papers
         </Subhead>
         <Flex mt={4} justifyContent="center">
-          <CallToAction href="/insert" mr={3} bg="green" color="white">
+          <CallToAction href="/teacher/insert" mr={3} bg="green" color="white">
             Add Questions
           </CallToAction>
-          <CallToAction href="/generate" bg="red" color="white">
+          <CallToAction href="/teacher/generate" bg="red" color="white">
             Generate Paper
           </CallToAction>
         </Flex>

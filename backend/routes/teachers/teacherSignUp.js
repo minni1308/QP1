@@ -49,38 +49,34 @@ teacherRouter
                                     pass: "uamaeefhzwwnlrtq",
                                 },
                             });
-                            // var url = 'https://questionpaper07.herokuapp.com/user/'+user._id;
-                            var url =
-                                "http://localhost:3000/user/" +
-                                user._id;
+                            // Use the frontend URL for verification with userId
+                            var url = `${process.env.FRONTEND_URL || "http://localhost:3000"}/verify/${user._id}`;
                             var mailOptions = {
-                                from:
-                                    "no-replyAdmin <qpgeneratorbvrit@gmail.com>",
+                                from: "no-replyAdmin <qpgeneratorbvrit@gmail.com>",
                                 to: user.username,
                                 subject: "Confirmation of Registration",
                                 text: "You are Successful Registered",
-                                html: `<p>To complete the registration process, please click on the link below</p><br><br><a href=${url}>Register</a>`,
+                                html: `<p>To complete the registration process, please click on the link below</p><br><br><a href=${url}>Verify Email</a>`,
                             };
                             transporter
                                 .sendMail(mailOptions)
-                                .then((err, info) => {
-                                    if (!err) {
-                                        res.statusCode = 200;
-                                        res.setHeader("Content-Type", "application/json");
-                                        res.json({
-                                            success: false,
-                                            message: "Cannot Sent Mail to your email-id, Please Provide a Valid Eamil ID."
-                                        });
-                                    } else {
-                                        res.statusCode = 200;
-                                        res.setHeader("Content-Type", "application/json");
-                                        res.json({
-                                            success: true,
-                                            status: "Registration Successful!",
-                                        });
-                                    }
+                                .then((info) => {
+                                    res.statusCode = 200;
+                                    res.setHeader("Content-Type", "application/json");
+                                    res.json({
+                                        success: true,
+                                        status: "Registration Successful! Please check your email for verification.",
+                                    });
                                 })
-                                .catch((err) => next(err));
+                                .catch((err) => {
+                                    console.error("Email sending error:", err);
+                                    res.statusCode = 200;
+                                    res.setHeader("Content-Type", "application/json");
+                                    res.json({
+                                        success: false,
+                                        message: "Failed to send verification email. Please try again later."
+                                    });
+                                });
                         }
                     });
                 }
