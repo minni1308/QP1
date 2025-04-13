@@ -86,29 +86,19 @@ async function generateQuestionsWithGemini(content, numQuestions, difficulty) {
 
     // Prepare the prompt
     const prompt = `Generate ${numQuestions} descriptive questions based on the following content.
-Make the questions easy,medium,hard difficulty level.
+Make the questions ${difficulty} difficulty level.
 Format your response as a JSON object with three arrays: easy, medium, and hard, where each array contains descriptive questions.
 
 Content to generate questions from:
 ${content}
 
 Remember to:
-- Make questions clear and thought-provoking
+- Make questions clear
 - Make them appropriate for each difficulty level
-- Test understanding and analytical skills
-- Avoid yes/no questions
 
 The response MUST be in this exact format:
 {
-  "easy": [
-    "",
-    ""
-  ],
-  "medium": [
-    "",
-    ""
-  ],
-  "hard": [
+  "{difficulty}": [
     "",
     ""
   ]
@@ -223,8 +213,7 @@ router.post("/", upload.single("file"), async (req, res) => {
     if (!subject || !difficulty || !numberOfQuestions) {
       return res.status(400).json({
         success: false,
-        message:
-          "Missing required parameters: subject, difficulty, or numberOfQuestions",
+        message: "Missing required parameters: subject, difficulty, or numberOfQuestions",
       });
     }
 

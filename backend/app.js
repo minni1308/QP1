@@ -6,10 +6,19 @@ const logger = require('morgan');
 const createError = require('http-errors');
 const passport = require('passport');
 const mongoose = require('mongoose');
+const cors = require('cors');
 
 // Config
 const config = require('./config');
 const app = express();
+
+// CORS Configuration
+app.use(cors({
+  origin: 'http://localhost:3000', // Your frontend URL
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 // MongoDB Connection
 mongoose.set('strictQuery', true);

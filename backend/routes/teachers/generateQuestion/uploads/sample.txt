@@ -1,222 +1,186 @@
-const express = require("express");
-const router = express.Router();
-const multer = require("multer");
-const path = require("path");
-const fs = require("fs").promises;
-const { GoogleGenerativeAI } = require("@google/generative-ai");
-const pdf = require("pdf-parse");
-const cors = require('cors');
-const fetch = require('node-fetch');
-require('dotenv').config();
+import React, { useState, useEffect } from 'react';
+import {
+  Container,
+  Card,
+  CardBody,
+  Button,
+  Alert,
+  Form,
+  FormGroup,
+  Label,
+  Input,
+  Badge,
+} from 'reactstrap';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { baseUrl } from '../../url';
 
-// Make fetch and Headers available globally
-global.fetch = fetch;
-global.Headers = fetch.Headers;
-
-// Enable CORS
-router.use(cors());
-
-// Create uploads directory if it doesn't exist
-const uploadDir = path.join(__dirname, "uploads");
-fs.mkdir(uploadDir, { recursive: true }).catch(console.error);
-
-// Configure Gemini AI with error checking
-let genAI;
-try {
-  if (!process.env.GEMINI_API_KEY) {
-    throw new Error('GEMINI_API_KEY is not set in environment variables');
-  }
-  console.log('API Key length:', process.env.GEMINI_API_KEY.length);
-  console.log('First few characters of API Key:', process.env.GEMINI_API_KEY.substring(0, 8) + '...');
+const DisplayGeneratedQuestionsComponent = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { questions, subject } = location.state || { questions: { easy: [], medium: [], hard: [] }, subject: '' };
   
-  genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-} catch (error) {
-  console.error('Error initializing Gemini AI:', error);
-  throw error;
-}
+  console.log('Location state:', location.state);
+  console.log('Received questions:', JSON.stringify(questions, null, 2));
+  console.log('Received subject:', subject);
+  
+  const [selectedQuestions, setSelectedQuestions] = useState({
+    easy: new Set(),
+    medium: new Set(),
+    hard: new Set()
+  });
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
 
-// Configure multer for file upload
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
-});
+  useEffect(() => {
+    console.log('Questions in useEffect:', JSON.stringify(questions, null, 2));
+    if (!questions || !questions.easy || !questions.medium || !questions.hard) {
+      console.error('Invalid questions data:', questions);
+      setError('Invalid questions data received');
+    }
+  }, [questions]);
 
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-  fileFilter: function (req, file, cb) {
-    const allowedTypes = [".pdf", ".txt"];
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (allowedTypes.includes(ext)) {
-      cb(null, true);
+  const handleCheckboxChange = (difficulty, index) => {
+    const newSelected = { ...selectedQuestions };
+    if (newSelected[difficulty].has(index)) {
+      newSelected[difficulty].delete(index);
     } else {
-      cb(new Error("Invalid file type. Only PDF and TXT files are supported."));
+      newSelected[difficulty].add(index);
     }
-  },
-});
+    setSelectedQuestions(newSelected);
+  };
 
-// Helper function to extract text from PDF
-async function extractTextFromPDF(filePath) {
-  try {
-    const dataBuffer = await fs.readFile(filePath);
-    const pdfData = await pdf(dataBuffer);
-    return pdfData.text;
-  } catch (error) {
-    console.error("Error extracting text from PDF:", error);
-    throw new Error("Failed to extract text from PDF");
-  }
-}
-
-// Helper function to generate questions using Gemini
-async function generateQuestionsWithGemini(content, numQuestions, difficulty) {
-  console.log("Generating questions with content length:", content.length);
-  
-  try {
-    const model = genAI.getGenerativeModel({ model: "v1" });
-
-    const prompt = `Generate ${numQuestions} descriptive questions based on the following content.
-      Make the questions ${difficulty} difficulty level.
-      Format your response as a JSON array of objects. Each object should have:
-      1. "text": the question text (should require a detailed answer)
-
-      Content to generate questions from:
-      ${content}
-
-      Remember to:
-      - Make questions clear and thought-provoking
-      - Questions should be appropriate for ${difficulty} level
-      - Questions should test understanding and analytical skills
-      
-      Example format:
-      [
-        {
-          "text": "Analyze the key concepts discussed in the content and explain their significance.",
-          "modelAnswer": "A detailed model answer that thoroughly explains the concepts...",
-          "marks": 8
-        }
-      ]`;
-
-    console.log("Sending request to Gemini API...");
-    const result = await model.generateContent(prompt);
-    console.log("Received response from Gemini API");
-    const response = result.response;
-    const text = response.text();
-    
-    // Log the response for debugging
-    console.log("Raw Gemini response:", text);
-    
-    try {
-      const parsedQuestions = JSON.parse(text);
-      // Validate the response format
-      if (!Array.isArray(parsedQuestions)) {
-        throw new Error("Response is not an array");
-      }
-      
-      // Validate each question object
-      parsedQuestions.forEach((question, index) => {
-        if (!question.text || !question.modelAnswer || !question.marks) {
-          throw new Error(`Invalid question format at index ${index}`);
-        }
-        // Validate marks are within acceptable range
-        if (question.marks < 5 || question.marks > 10) {
-          throw new Error(`Invalid marks value for question ${index + 1}`);
-        }
-      });
-      
-      return parsedQuestions;
-    } catch (parseError) {
-      console.error("Error parsing Gemini response:", parseError);
-      throw new Error("Failed to parse generated questions");
-    }
-  } catch (error) {
-    console.error('Gemini API Error:', error);
-    if (error.message.includes('API_KEY_INVALID')) {
-      throw new Error('Invalid API key. Please check your GEMINI_API_KEY environment variable.');
-    }
-    throw new Error('Error generating questions with Gemini: ' + error.message);
-  }
-}
-
-// Main route handler
-router.post("/", upload.single("file"), async (req, res) => {
-  console.log("Received question generation request");
-  try {
-    const { subject, difficulty, numberOfQuestions, content } = req.body;
-    let textContent = content;
-
-    // If a file was uploaded, extract its text
-    if (req.file) {
-      console.log("Processing uploaded file:", req.file.originalname);
-      const filePath = req.file.path;
-      
-      try {
-        if (path.extname(req.file.originalname).toLowerCase() === '.pdf') {
-          textContent = await extractTextFromPDF(filePath);
-        } else {
-          textContent = await fs.readFile(filePath, 'utf8');
-        }
-        console.log("Successfully extracted text from file, content length:", textContent.length);
-      } catch (error) {
-        console.error("File processing error:", error);
-        return res.status(400).json({
-          success: false,
-          message: "Error processing file: " + error.message
-        });
-      } finally {
-        // Clean up: delete the uploaded file
-        try {
-          await fs.unlink(filePath);
-          console.log("Cleaned up uploaded file:", filePath);
-        } catch (error) {
-          console.error("Error deleting file:", error);
-        }
-      }
-    }
-
-    if (!textContent) {
-      return res.status(400).json({
-        success: false,
-        message: "No content provided for question generation"
-      });
-    }
-
-    // Validate input parameters
-    if (!subject || !difficulty || !numberOfQuestions) {
-      return res.status(400).json({
-        success: false,
-        message: "Missing required parameters: subject, difficulty, or numberOfQuestions"
-      });
-    }
-
-    // Generate questions using Gemini
-    console.log("Calling Gemini API...");
-    const questions = await generateQuestionsWithGemini(
-      textContent,
-      parseInt(numberOfQuestions),
-      difficulty
+  const handleAddToDatabase = async () => {
+    const totalSelected = Object.values(selectedQuestions).reduce(
+      (sum, set) => sum + set.size, 0
     );
-    console.log("Questions generated successfully");
+    
+    if (totalSelected === 0) {
+      setError('Please select at least one question');
+      return;
+    }
 
-    res.json({
-      success: true,
-      questions: questions
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    // Prepare questions for database
+    const selectedQuestionsArray = [];
+    ['easy', 'medium', 'hard'].forEach(difficulty => {
+      Array.from(selectedQuestions[difficulty]).forEach(index => {
+        selectedQuestionsArray.push({
+          text: questions[difficulty][index],
+          subject: subject,
+          difficulty: difficulty,
+          type: 'descriptive'
+        });
+      });
     });
 
-  } catch (error) {
-    console.error("Error in question generation:", error);
-    res.status(500).json({
-      success: false,
-      message: error.message || "Error generating questions",
-      error: error.message
-    });
-  }
-});
+    try {
+      const response = await fetch(`${baseUrl}/teacher/questions/add`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ questions: selectedQuestionsArray }),
+      });
 
-module.exports = router;
+      const data = await response.json();
+
+      if (response.ok) {
+        setSuccess('Questions successfully added to database!');
+        setSelectedQuestions({ easy: new Set(), medium: new Set(), hard: new Set() });
+      } else {
+        setError(data.message || 'Failed to add questions to database');
+      }
+    } catch (err) {
+      setError('An error occurred while adding questions to database');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGenerateMore = () => {
+    navigate('/teacher/generate-questions');
+  };
+
+  const renderQuestionsByDifficulty = (difficulty) => {
+    console.log(`Rendering ${difficulty} questions:`, questions[difficulty]);
+    if (!questions || !questions[difficulty] || questions[difficulty].length === 0) {
+      console.log(`No ${difficulty} questions to display`);
+      return null;
+    }
+
+    return (
+      <div className="mb-4">
+        <h4>
+          <Badge color={difficulty === 'easy' ? 'success' : difficulty === 'medium' ? 'warning' : 'danger'} className="mb-3">
+            {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)} Questions
+          </Badge>
+        </h4>
+        {questions[difficulty].map((question, index) => (
+          <Card key={index} className="mb-3">
+            <CardBody>
+              <div className="d-flex align-items-start">
+                <FormGroup check className="me-3">
+                  <Input
+                    type="checkbox"
+                    checked={selectedQuestions[difficulty].has(index)}
+                    onChange={() => handleCheckboxChange(difficulty, index)}
+                  />
+                </FormGroup>
+                <div>
+                  <h5>Question {index + 1}</h5>
+                  <p>{question}</p>
+                </div>
+              </div>
+            </CardBody>
+          </Card>
+        ))}
+      </div>
+    );
+  };
+
+  return (
+    <Container className="mt-4 mb-4">
+      <h2 className="text-center mb-4">Generated Questions</h2>
+      
+      {error && <Alert color="danger">{error}</Alert>}
+      {success && <Alert color="success">{success}</Alert>}
+
+      <div className="mb-3 d-flex justify-content-between">
+        <Button 
+          color="primary" 
+          onClick={handleAddToDatabase}
+          disabled={loading || Object.values(selectedQuestions).every(set => set.size === 0)}
+        >
+          {loading ? 'Adding...' : 'Add Selected to Database'}
+        </Button>
+        <Button color="secondary" onClick={handleGenerateMore}>
+          Generate More Questions
+        </Button>
+      </div>
+
+      {renderQuestionsByDifficulty('easy')}
+      {renderQuestionsByDifficulty('medium')}
+      {renderQuestionsByDifficulty('hard')}
+
+      {(!questions || !questions.easy?.length && !questions.medium?.length && !questions.hard?.length) && (
+        <Alert color="info">
+          No questions generated yet. Please go back and generate some questions.
+        </Alert>
+      )}
+    </Container>
+  );
+};
+
+export default DisplayGeneratedQuestionsComponent; 
+
+
+
+
 
 
 
