@@ -17,7 +17,7 @@ const LoginNav = () => {
   return (
     <div style={{ width: "100vw", position: "sticky", top: 0, zIndex: 1 }}>
       <Navbar color="light" light expand="lg">
-        <NavbarBrand tag={Link} to="/home" style={{ color: "black" }}>
+      <NavbarBrand tag={Link} to="/teacher/landing" style={{ color: "black" }}>
           <img src="/favicon.ico" alt="icon" width={50} /> QP Generator
         </NavbarBrand>
 

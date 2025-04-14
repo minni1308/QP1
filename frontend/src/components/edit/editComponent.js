@@ -13,91 +13,162 @@ import {
   CardTitle,
   CardSubtitle,
   Row,
-  Col
+  Col,
+  Container
 } from "reactstrap";
 
 const Edit = ({ isEmpty, questions, removedQuestions, handleInput, removeClick, handleSubmit1, handleCancel }) => {
   if (isEmpty) {
     return (
-      <Row xs={12}>
-        <Card>
-          <CardImg top height="615em" src="/img/demo.jpg" alt="Card image cap" />
-          <CardBody>
-            <CardTitle tag="h5">Fill in the Details</CardTitle>
-            <CardSubtitle tag="h6" className="mb-2 text-muted">
+      <Container className="py-5">
+        <Card className="shadow-sm" style={{ maxWidth: "800px", margin: "0 auto" }}>
+          <CardBody className="text-center p-5">
+            <img 
+              src="/img/demo.jpg" 
+              alt="Instructions" 
+              style={{ 
+                maxWidth: "300px", 
+                marginBottom: "2rem",
+                borderRadius: "10px",
+                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
+              }} 
+            />
+            <CardTitle tag="h3" className="mb-3" style={{ color: "#333", fontWeight: "600" }}>
+              Fill in the Details
+            </CardTitle>
+            <CardSubtitle tag="h6" className="mb-3 text-muted">
               View the questions which are present in the database
             </CardSubtitle>
-            <CardText>
+            <CardText className="lead" style={{ fontSize: "1.1rem" }}>
               Select Subject, Unit and Difficulty to Access, Modify and Update the Questions as required.
             </CardText>
           </CardBody>
         </Card>
-      </Row>
+      </Container>
     );
   }
 
   if (questions.length === 0) {
     return (
-      <Row xs={12}>
-        <Card>
-          <CardImg top height="615em" src="/img/noquestion.png" alt="Card image cap" />
-          <CardBody>
-            <CardTitle tag="h5">No Questions Found</CardTitle>
-            <CardSubtitle tag="h6" className="mb-2 text-muted">
+      <Container className="py-5">
+        <Card className="shadow-sm" style={{ maxWidth: "800px", margin: "0 auto" }}>
+          <CardBody className="text-center p-5">
+            <img 
+              src="/img/noquestion.png" 
+              alt="No Questions" 
+              style={{ 
+                maxWidth: "300px", 
+                marginBottom: "2rem",
+                borderRadius: "10px",
+                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
+              }} 
+            />
+            <CardTitle tag="h3" className="mb-3" style={{ color: "#333", fontWeight: "600" }}>
+              No Questions Found
+            </CardTitle>
+            <CardSubtitle tag="h6" className="mb-3 text-muted">
               Seems Like No question has been inserted in this section.
             </CardSubtitle>
-            <CardText>
+            <CardText className="lead" style={{ fontSize: "1.1rem" }}>
               Go to the Insert option from above and insert the question.
             </CardText>
           </CardBody>
         </Card>
-      </Row>
+      </Container>
     );
   }
 
   return (
-    <Form onSubmit={handleSubmit1}>
-      {questions.map((el, i) => (
-        <div key={i} style={{ paddingTop: "0.8em" }}>
-          <InputGroup>
-            <InputGroupAddon addonType="prepend">
-              <InputGroupText>{i + 1}</InputGroupText>
-            </InputGroupAddon>
-            <Input
-              placeholder="Enter the Question"
-              value={el.name || ""}
-              required
-              onChange={(e) => handleInput(i, e)}
-              disabled={removedQuestions[i]}
-            />
-            <InputGroupAddon addonType="append">
-              <Button
-                size="sm"
-                onClick={() => removeClick(i)}
-                color={removedQuestions[i] ? "success" : "danger"}
-              >
-                {removedQuestions[i] ? "+" : "X"}
-              </Button>
-            </InputGroupAddon>
-          </InputGroup>
-        </div>
-      ))}
+    <Container className="py-5">
+      <Card className="shadow-sm" style={{ maxWidth: "800px", margin: "0 auto" }}>
+        <CardBody className="p-4">
+          <h2 className="text-center mb-4" style={{ color: "#333", fontWeight: "600" }}>
+            Edit Questions
+          </h2>
+          
+          <Form onSubmit={handleSubmit1}>
+            {questions.map((el, i) => (
+              <div key={i} className="mb-3">
+                <InputGroup className="shadow-sm">
+                  <InputGroupAddon addonType="prepend">
+                    <InputGroupText 
+                      style={{ 
+                        backgroundColor: "#f8f9fa",
+                        borderColor: "#dee2e6",
+                        color: "#495057",
+                        minWidth: "50px",
+                        justifyContent: "center"
+                      }}
+                    >
+                      {i + 1}
+                    </InputGroupText>
+                  </InputGroupAddon>
+                  <Input
+                    placeholder="Enter the Question"
+                    value={el.name || ""}
+                    required
+                    onChange={(e) => handleInput(i, e)}
+                    disabled={removedQuestions[i]}
+                    style={{
+                      borderColor: "#dee2e6",
+                      padding: "0.75rem",
+                      fontSize: "1rem"
+                    }}
+                    className={removedQuestions[i] ? "bg-light" : ""}
+                  />
+                  <InputGroupAddon addonType="append">
+                    <Button
+                      size="sm"
+                      onClick={() => removeClick(i)}
+                      color={removedQuestions[i] ? "success" : "danger"}
+                      style={{
+                        padding: "0.5rem 1rem",
+                        fontSize: "1rem",
+                        borderRadius: "0 4px 4px 0"
+                      }}
+                    >
+                      {removedQuestions[i] ? "+" : "×"}
+                    </Button>
+                  </InputGroupAddon>
+                </InputGroup>
+              </div>
+            ))}
 
-      <Row style={{ margin: '0.8em' }}>
-        <Col xs={12} sm={6}>
-          <Button color="primary" type="submit">Submit</Button>
-        </Col>
-        <Col xs={12} sm={6}>
-          <Button
-            color="white"
-            style={{ border: '1px solid' }}
-            onClick={handleCancel}
-          >
-            Cancel
-          </Button>
-        </Col>
-      </Row>
-    </Form>
+            <Row className="mt-4">
+              <Col xs={12} sm={6} className="mb-2 mb-sm-0">
+                <Button 
+                  color="primary" 
+                  type="submit" 
+                  className="w-100"
+                  style={{
+                    padding: "0.75rem",
+                    fontSize: "1rem",
+                    borderRadius: "6px"
+                  }}
+                >
+                  Save Changes
+                </Button>
+              </Col>
+              <Col xs={12} sm={6}>
+                <Button
+                  color="light"
+                  onClick={handleCancel}
+                  className="w-100"
+                  style={{
+                    padding: "0.75rem",
+                    fontSize: "1rem",
+                    borderRadius: "6px",
+                    border: "1px solid #dee2e6"
+                  }}
+                >
+                  Cancel
+                </Button>
+              </Col>
+            </Row>
+          </Form>
+        </CardBody>
+      </Card>
+    </Container>
   );
 };
 

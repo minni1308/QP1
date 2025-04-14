@@ -22,7 +22,7 @@ import Subject from "./Admin/subject";
 import AdminHome from "./Admin/adminHome";
 
 import localStorage from "local-storage";
-
+import DisplayGeneratedQuestionsComponent from "./teacher/DisplayGeneratedQuestionsComponent";
 const PrivateRoute = ({ children, adminOnly = false }) => {
   const token = localStorage.get("token");
   const user = localStorage.get("user");
@@ -79,7 +79,13 @@ const Main = () => {
         } />
         <Route path="/teacher/generate-questions" element={
           <PrivateRoute><GenerateQuestions /></PrivateRoute>
+          
         } />
+
+        <Route path="/teacher/display-generated-questions" element={
+          <PrivateRoute><DisplayGeneratedQuestionsComponent /></PrivateRoute>
+        } />
+        
         <Route path="/teacher/edit" element={
           <PrivateRoute><Options /></PrivateRoute>
         } />

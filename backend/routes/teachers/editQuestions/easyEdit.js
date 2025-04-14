@@ -6,23 +6,52 @@ const cors = require('../../cors');
 
 easyEditRouter.use(express.json());
 
-// Utility: extract questions by unit & teacher
-const getUnitQuestions = (data, unit, teacherId) => {
-  return data?.easy?.[unit]?.filter(q => q.teacher.equals(teacherId)) || [];
+// Utility: extract all questions by unit
+const getUnitQuestions = (data, unit) => {
+  return data?.easy?.[unit] || [];
 };
 
-// Utility: pull teacher's questions from unit and insert new ones
+// Utility: update teacher's questions by unit
 const updateUnitQuestions = async (unit, id, teacherId, newQuestions) => {
-  await Question.updateOne(
-    { _id: id },
-    { $pull: { [`easy.${unit}`]: { teacher: teacherId } } }
-  );
+  console.log('Updating easy questions:', { unit, id, teacherId, newQuestions });
+  
+  try {
+    // First, find the document and verify it exists
+    const doc = await Question.findById(id);
+    if (!doc) {
+      throw new Error("Question document not found");
+    }
 
-  const doc = await Question.findById(id, { [`easy.${unit}`]: 1 });
-  if (!doc) throw new Error("Question document not found");
+    // Initialize the unit array if it doesn't exist
+    if (!doc.easy[unit]) {
+      doc.easy[unit] = [];
+    }
 
-  doc.easy[unit].push(...newQuestions);
-  return await doc.save();
+    // Remove existing questions by this teacher
+    doc.easy[unit] = doc.easy[unit].filter(q => !q.teacher.equals(teacherId));
+
+    // Add the new questions with teacher ID
+    const questionsWithTeacher = newQuestions.map(q => ({
+      ...q,
+      teacher: teacherId,
+      name: q.name || q.text, // handle both name and text properties
+      timestamp: new Date()
+    }));
+
+    console.log('Adding new questions:', questionsWithTeacher);
+
+    // Add new questions
+    doc.easy[unit].push(...questionsWithTeacher);
+
+    // Save the document
+    const savedDoc = await doc.save();
+    console.log('Successfully saved document:', savedDoc.easy[unit].length, 'questions in unit');
+    
+    return savedDoc;
+  } catch (error) {
+    console.error('Error updating questions:', error);
+    throw error;
+  }
 };
 
 easyEditRouter.route('/get')
@@ -32,8 +61,15 @@ easyEditRouter.route('/get')
     try {
       const { id, unit } = req.body;
       const doc = await Question.findById(id, { [`easy.${unit}`]: 1 });
-      const filtered = getUnitQuestions(doc, unit, req.user._id);
-      res.status(200).json(filtered);
+      const questions = getUnitQuestions(doc, unit);
+      
+      // Add an isEditable flag to each question
+      const questionsWithEditFlag = questions.map(q => ({
+        ...q.toObject(),
+        isEditable: q.teacher.equals(req.user._id)
+      }));
+      
+      res.status(200).json(questionsWithEditFlag);
     } catch (err) {
       next(err);
     }
@@ -47,10 +83,23 @@ easyEditRouter.route('/put')
   .post((_, res) => res.status(405).end('POST operation is not permitted'))
   .put(cors.corsWithOptions, authenticate.verifyUser, async (req, res, next) => {
     try {
+      console.log('Received update request:', req.body);
       const { unit, id, easy } = req.body;
-      await updateUnitQuestions(unit, id, req.user._id, easy);
-      res.status(200).json({ success: true });
+      
+      if (!unit || !id || !easy) {
+        throw new Error('Missing required fields: unit, id, or questions');
+      }
+
+      const result = await updateUnitQuestions(unit, id, req.user._id, easy);
+      console.log('Update completed successfully');
+      
+      res.status(200).json({ 
+        success: true,
+        message: 'Questions updated successfully',
+        questionCount: result.easy[unit].length
+      });
     } catch (err) {
+      console.error('Error in put route:', err);
       next(err);
     }
   })

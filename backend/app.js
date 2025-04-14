@@ -124,11 +124,21 @@ app.use(function (err, req, res, next) {
 // Server Init
 // ─────────────────────────────────────────────────────────────
 
-const PORT = process.env.PORT || 4200;
-app.set('port', PORT);
+const port = process.env.PORT || 4200;
 
-const server = app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
+const server = app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+}).on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`Port ${port} is already in use. Please try these solutions:`);
+    console.error('1. Stop any other instances of this server');
+    console.error('2. Choose a different port by setting the PORT environment variable');
+    console.error('3. Run: lsof -i :4200 to see what process is using the port');
+    process.exit(1);
+  } else {
+    console.error('Server error:', err);
+    process.exit(1);
+  }
 });
 
 module.exports = app;

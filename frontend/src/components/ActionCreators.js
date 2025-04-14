@@ -2,7 +2,7 @@ import localStorage from "local-storage";
 import { baseUrl } from "../url";
 
 // Helper to construct auth headers
-const getAuthHeaders = (contentType = true) => {
+export const getAuthHeaders = (contentType = true) => {
   const headers = {
     Authorization: "Bearer " + localStorage.get("token"),
   };

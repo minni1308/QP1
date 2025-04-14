@@ -8,6 +8,7 @@ import {
   ModalFooter,
   Row,
   Col,
+  Container,
 } from "reactstrap";
 import Insert from "./insertComponent";
 import Details from "./numberComponent";
@@ -185,66 +186,116 @@ const Alpha = () => {
   }
 
   return (
-    <Row style={{ margin: "0.5em" }}>
-      <Col md={12} lg={3}>
-        <Details />
-      </Col>
-      <Col md={12} lg={9}>
-        <form onSubmit={handleSubmit2}>
-          {ques.map((el, i) => (
-            <Insert
-              key={i}
-              index={i}
-              formd={el}
-              toggler={tRemove}
-              options={options}
-              handleInput={handleInput}
-              removeClick={removeClick}
-              addFormClick={addFormClick}
-              formClearAll={formClearAll}
-              removeForm={removeForm}
-              toggleRemove={toggleRemove}
-            />
-          ))}
-          <Row style={{ marginTop: "1em" }} xs={12}>
-            <Col sm={4}>
-              <Button outline color="primary" size="md" onClick={addClick}>
-                Add
+    <Container fluid style={{ padding: "2rem" }}>
+      <h2 style={{
+        textAlign: "center",
+        marginBottom: "2rem",
+        color: "#333",
+        fontWeight: "bold"
+      }}>
+        Insert Questions
+      </h2>
+      
+      <Row>
+        <Col md={12} lg={3}>
+          <div style={{
+            backgroundColor: "white",
+            padding: "2rem",
+            borderRadius: "8px",
+            boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+            marginBottom: "2rem"
+          }}>
+            <Details />
+          </div>
+        </Col>
+        <Col md={12} lg={9}>
+          <form onSubmit={handleSubmit2}>
+            {ques.map((el, i) => (
+              <Insert
+                key={i}
+                index={i}
+                formd={el}
+                toggler={tRemove}
+                options={options}
+                handleInput={handleInput}
+                removeClick={removeClick}
+                addFormClick={addFormClick}
+                formClearAll={formClearAll}
+                removeForm={removeForm}
+                toggleRemove={toggleRemove}
+              />
+            ))}
+            
+            <div style={{
+              backgroundColor: "white",
+              padding: "1.5rem",
+              borderRadius: "8px",
+              boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+              marginTop: "1rem"
+            }}>
+              <Row className="justify-content-center">
+                <Col sm={4}>
+                  <Button
+                    color="primary"
+                    onClick={addClick}
+                    style={{
+                      width: "100%",
+                      padding: "12px",
+                      borderRadius: "6px",
+                      fontSize: "1rem"
+                    }}
+                  >
+                    Add Section
+                  </Button>
+                </Col>
+                <Col sm={4}>
+                  <Button
+                    type="submit"
+                    color="success"
+                    style={{
+                      width: "100%",
+                      padding: "12px",
+                      borderRadius: "6px",
+                      fontSize: "1rem"
+                    }}
+                  >
+                    Submit All
+                  </Button>
+                </Col>
+                <Col sm={4}>
+                  <Button
+                    color="danger"
+                    onClick={toggleRemoveAll}
+                    disabled={ques.length === 1}
+                    style={{
+                      width: "100%",
+                      padding: "12px",
+                      borderRadius: "6px",
+                      fontSize: "1rem"
+                    }}
+                  >
+                    Remove All
+                  </Button>
+                </Col>
+              </Row>
+            </div>
+          </form>
+
+          <Modal isOpen={tRemoveAll} toggle={toggleRemoveAll}>
+            <ModalHeader toggle={toggleRemoveAll}>Remove All Questions</ModalHeader>
+            <ModalBody>Are you sure you want to remove all questions?</ModalBody>
+            <ModalFooter>
+              <Button color="secondary" onClick={toggleRemoveAll}>
+                Cancel
               </Button>
-            </Col>
-            <Col sm={4}>
-              <Button outline role="submit" size="md" color="success">
-                Submit
-              </Button>
-            </Col>
-            <Col sm={4}>
-              <Button
-                outline
-                size="md"
-                color="danger"
-                onClick={toggleRemoveAll}
-                disabled={ques.length === 1}
-              >
+              <Button color="danger" onClick={removeAllForm}>
                 Remove All
               </Button>
-            </Col>
-          </Row>
-        </form>
-
-        <Modal isOpen={tRemoveAll} toggle={toggleRemoveAll}>
-          <ModalHeader toggle={toggleRemoveAll}>Modal title</ModalHeader>
-          <ModalBody>Do you want to remove all the Questions?</ModalBody>
-          <ModalFooter>
-            <Button color="secondary" onClick={toggleRemoveAll}>
-              Cancel
-            </Button>
-            <Button color="danger" onClick={removeAllForm}>
-              Yes
-            </Button>
-          </ModalFooter>
-        </Modal>
-      </Col>
-    </Row>
+            </ModalFooter>
+          </Modal>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 

@@ -61,7 +61,10 @@ const Options = () => {
 
   const handleInput = (index, e) => {
     const updatedQuestions = [...questions];
-    updatedQuestions[index].name = e.target.value.trimLeft();
+    updatedQuestions[index] = {
+      ...updatedQuestions[index],
+      name: e.target.value.trimLeft()
+    };
     setQuestions(updatedQuestions);
   };
 
@@ -83,12 +86,21 @@ const Options = () => {
 
   const handleSubmit1 = (e) => {
     e.preventDefault();
-    const filtered = questions.filter((_, i) => !removedQuestions[i]);
-    const cleaned = filtered.map((q) => ({ ...q, name: q.name.trim() }));
+    
+    const remainingQuestions = questions.filter((_, i) => !removedQuestions[i]);
+    
+    const cleanedQuestions = remainingQuestions.map(q => ({
+      name: q.name.trim(),
+      teacher: q.teacher,
+      _id: q._id,
+      timestamp: new Date()
+    }));
+
+    console.log('Submitting questions:', cleanedQuestions);
 
     setIsLoading(true);
     editQuestions(
-      cleaned,
+      cleanedQuestions,
       selectedSubject.id,
       selectedDifficulty.value,
       selectedUnit.value
@@ -99,11 +111,12 @@ const Options = () => {
           alert("Successfully Edited!!!");
           handleCancel();
         } else {
-          alert("Fail to Edit");
+          alert("Failed to Edit: " + (res.message || "Unknown error"));
           setIsLoading(false);
         }
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error('Error updating questions:', error);
         setIsLoading(false);
         alert("Cannot Connect to Server!!!, Logging Out...");
         localStorage.clear();
@@ -128,6 +141,7 @@ const Options = () => {
     )
       .then((res) => res.json())
       .then((data) => {
+        console.log('Fetched questions:', data);
         setQuestions(data);
         setRemovedQuestions(new Array(data.length).fill(false));
         setIsLoading(false);

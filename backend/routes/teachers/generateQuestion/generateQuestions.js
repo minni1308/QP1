@@ -77,7 +77,7 @@ async function extractTextFromPDF(filePath) {
 // ----------------------------
 // Helper function to generate questions using Gemini
 // ----------------------------
-async function generateQuestionsWithGemini(content, numQuestions, difficulty) {
+async function generateQuestionsWithGemini(content, numQuestions) {
   console.log("Generating questions with content length:", content.length);
 
   try {
@@ -85,9 +85,8 @@ async function generateQuestionsWithGemini(content, numQuestions, difficulty) {
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     // Prepare the prompt
-    const prompt = `Generate ${numQuestions} descriptive questions based on the following content.
-Make the questions ${difficulty} difficulty level.
-Format your response as a JSON object with three arrays: easy, medium, and hard, where each array contains descriptive questions.
+    const prompt = `Generate descriptive questions based on the following content.
+Format your response as a JSON object with three keys: easy, medium, and hard, where value of the keys is an array contains  ${numQuestions} descriptive questions.
 
 Content to generate questions from:
 ${content}
@@ -167,7 +166,7 @@ The response MUST be in this exact format:
 router.post("/", upload.single("file"), async (req, res) => {
   console.log("Received question generation request");
   try {
-    const { subject, difficulty, numberOfQuestions, content } = req.body;
+    const { subject, numberOfQuestions, content } = req.body;
     let textContent = content;
 
     // If a file was uploaded, extract its text
@@ -210,7 +209,7 @@ router.post("/", upload.single("file"), async (req, res) => {
     }
 
     // Validate input parameters
-    if (!subject || !difficulty || !numberOfQuestions) {
+    if (!subject || !numberOfQuestions) {
       return res.status(400).json({
         success: false,
         message: "Missing required parameters: subject, difficulty, or numberOfQuestions",
@@ -222,7 +221,6 @@ router.post("/", upload.single("file"), async (req, res) => {
     const questions = await generateQuestionsWithGemini(
       textContent,
       parseInt(numberOfQuestions),
-      difficulty
     );
     console.log("Questions generated successfully");
 

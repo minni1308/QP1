@@ -16,10 +16,10 @@ const GenerateQuestionsComponent = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     subject: "",
+    id: "",
     chapterNumber: "",
     numberOfQuestions: 5,
     content: "",
-    difficulty: "medium"
   });
   const [subjects, setSubjects] = useState([]);
   const [file, setFile] = useState(null);
@@ -27,7 +27,7 @@ const GenerateQuestionsComponent = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  const [generatedQuestions, setGeneratedQuestions] = useState([]);
+  const [generatedQuestions, setGeneratedQuestions] = useState({});
   const [isProcessing, setIsProcessing] = useState(false);
 
   // Fetch subjects when component mounts
@@ -57,9 +57,14 @@ const GenerateQuestionsComponent = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    let subjectId = formData.id;
+    if(name==='subject')
+      subjectId = e.target.options[e.target.selectedIndex].id;
+    console.log(name, value, subjectId);
     setFormData((prev) => ({
       ...prev,
       [name]: value,
+      'id': subjectId,
     }));
   };
 
@@ -134,7 +139,6 @@ const GenerateQuestionsComponent = () => {
     formDataToSend.append("subject", formData.subject);
     formDataToSend.append("chapterNumber", formData.chapterNumber);
     formDataToSend.append("numberOfQuestions", formData.numberOfQuestions.toString());
-    formDataToSend.append("difficulty", formData.difficulty);
     
     if (formData.content) {
       formDataToSend.append("content", formData.content);
@@ -180,28 +184,16 @@ const GenerateQuestionsComponent = () => {
       if (!data || !data.questions) {
         throw new Error("No questions received from server");
       }
-
-      // Convert questions object/array to the format we need
-      let processedQuestions;
-      if (Array.isArray(data.questions)) {
-        processedQuestions = data.questions;
-      } else if (typeof data.questions === 'object') {
-        // If questions come as an object with text property
-        processedQuestions = data.questions.map(q => q.text || q);
-      } else {
-        throw new Error("Invalid questions format received");
-      }
-
-      console.log('Processed questions:', processedQuestions);
       
       // Store the questions in state
-      setGeneratedQuestions(processedQuestions);
+      setGeneratedQuestions(data.questions);
       
       // Navigate to display page with the questions
       const navigationState = {
-        questions: processedQuestions,
+        questions: data.questions,
         subject: formData.subject,
-        chapterNumber: formData.chapterNumber
+        id: formData.id,
+        chapterNumber: 'u'+formData.chapterNumber.toString(),
       };
       console.log('Navigating with state:', navigationState);
       
@@ -256,7 +248,7 @@ const GenerateQuestionsComponent = () => {
               >
                 <option value="">Select a subject</option>
                 {subjects.map((subject) => (
-                  <option key={subject.id} value={subject.code}>
+                  <option id={subject.id} value={subject.code}>
                     {subject.name} ({subject.code})
                   </option>
                 ))}
@@ -288,22 +280,6 @@ const GenerateQuestionsComponent = () => {
                 max="20"
                 required
               />
-            </FormGroup>
-
-            <FormGroup>
-              <Label for="difficulty">Difficulty Level *</Label>
-              <Input
-                type="select"
-                name="difficulty"
-                id="difficulty"
-                value={formData.difficulty}
-                onChange={handleInputChange}
-                required
-              >
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
-              </Input>
             </FormGroup>
           </div>
 
