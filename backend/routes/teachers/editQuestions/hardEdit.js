@@ -1,112 +1,149 @@
-const express = require('express');
-const hardEditRouter = express.Router();
-const authenticate = require('../../../authenticate');
-const question = require('../../../models/questions');
-const cors = require('../../cors');
+var express = require('express');
+var hardEditRouter = express.Router();
+var authenticate = require('../../../authenticate');
+var question = require('../../../models/questions');
+var cors = require('../../cors');
 
 hardEditRouter.use(express.json());
+hardEditRouter.route('/get')
+    .options(cors.corsWithOptions, (req, resp) => { resp.sendStatus(200); })
+    .get((req, res, next) => {
+        res.end('GET operation is not Perfomed');
+    })
+    .post(cors.corsWithOptions, authenticate.verifyUser, async (req, response, next) => {
+        try {
+            if (req.body.unit === 'u1') {
+                var questions = await question.findById(req.body.id, { "hard.u1": 1 })
+                var teacherQuestions = questions.hard.u1.filter((data) => {
+                    return data.teacher.equals(req.user._id);
+                })
+                response.statusCode = 200;
+                response.setHeader('Content-Type', 'application/json');
+                response.json(teacherQuestions);
+            } else if (req.body.unit === 'u2') {
+                var questions = await question.findById(req.body.id, { "hard.u2": 1 })
+                var teacherQuestions = questions.hard.u2.filter((data) => {
+                    return data.teacher.equals(req.user._id);
+                })
+                response.statusCode = 200;
+                response.setHeader('Content-Type', 'application/json');
+                response.json(teacherQuestions);
+            } else if (req.body.unit === 'u3') {
+                var questions = await question.findById(req.body.id, { "hard.u3": 1 })
+                var teacherQuestions = questions.hard.u3.filter((data) => {
+                    return data.teacher.equals(req.user._id);
+                })
+                response.statusCode = 200;
+                response.setHeader('Content-Type', 'application/json');
+                response.json(teacherQuestions);
+            } else if (req.body.unit === 'u4') {
+                var questions = await question.findById(req.body.id, { "hard.u4": 1 })
+                var teacherQuestions = questions.hard.u4.filter((data) => {
+                    return data.teacher.equals(req.user._id);
+                })
+                response.statusCode = 200;
+                response.setHeader('Content-Type', 'application/json');
+                response.json(teacherQuestions);
+            } else {
+                var questions = await question.findById(req.body.id, { "hard.u5": 1 })
+                var teacherQuestions = questions.hard.u5.filter((data) => {
+                    return data.teacher.equals(req.user._id);
+                })
+                response.statusCode = 200;
+                response.setHeader('Content-Type', 'application/json');
+                response.json(teacherQuestions);
+            }
+        } catch (err) {
+            console.log(err);
+            next(err);
+        }
+    })
+    .put((req, res, next) => {
+        res.end('PUT operation is not perfromed');
+    })
+    .delete((req, res, next) => {
+        res.end('DELETE Operation is not Performed');
+    })
+hardEditRouter.route('/put')
+    .options(cors.corsWithOptions, (req, resp) => { resp.sendStatus(200); })
+    .get((req,res,next)=>{
+        res.end('GET operation is not perfromed');
+    })
+    .post((req,res,next)=>{
+        res.end('POST operation is not perfromed');
+    })
+    .put(cors.corsWithOptions, authenticate.verifyUser, async (req, response, next) => {
+        try {
+            if (req.body.unit === 'u1') {
+                question.updateOne({ _id: req.body.id }, { $pull: { "hard.u1": { teacher: req.user._id } } }, { multi: true }).then((sx) => {
+                    console.log('success');
+                }).catch((err) => next(err));
+                var data = await question.findById(req.body.id, { "hard.u1": 1 });
+                for (var i = 0; i < req.body.hard.length; i++) {
+                    data.hard.u1.push(req.body.hard[i]);
+                }
+                await data.save()
+                response.statusCode = 200;
+                response.setHeader('Content-Type', 'application/json');
+                response.json({ success: true });
+            } else if (req.body.unit === 'u2') {
+                question.updateOne({ _id: req.body.id }, { $pull: { "hard.u2": { teacher: req.user._id } } }, { multi: true }).then((sx) => {
+                    console.log('success');
+                }).catch((err) => next(err));
+                var data = await question.findById(req.body.id, { "hard.u2": 1 });
+                for (var i = 0; i < req.body.hard.length; i++) {
+                    data.hard.u2.push(req.body.hard[i]);
+                }
+                await data.save()
+                response.statusCode = 200;
+                response.setHeader('Content-Type', 'application/json');
+                response.json({ success: true });
 
-/** Utility to extract all hard questions by unit */
-async function getHardQuestionsByUnit(id, unit) {
-  const doc = await question.findById(id, { [`hard.${unit}`]: 1 });
-  return doc?.hard?.[unit] || [];
-}
+            } else if (req.body.unit === 'u3') {
+                question.updateOne({ _id: req.body.id }, { $pull: { "hard.u3": { teacher: req.user._id } } }, { multi: true }).then((sx) => {
+                    console.log('success');
+                }).catch((err) => next(err));
+                var data = await question.findById(req.body.id, { "hard.u3": 1 });
+                for (var i = 0; i < req.body.hard.length; i++) {
+                    data.hard.u3.push(req.body.hard[i]);
+                }
+                await data.save()
+                response.statusCode = 200;
+                response.setHeader('Content-Type', 'application/json');
+                response.json({ success: true });
 
-/** Utility to update teacher's hard questions by unit */
-async function updateHardQuestionsByUnit(id, unit, teacherId, newQuestions) {
-  console.log('Updating hard questions:', { unit, id, teacherId, newQuestions });
-  
-  try {
-    // First, find the document and verify it exists
-    const doc = await question.findById(id);
-    if (!doc) {
-      throw new Error("Question document not found");
-    }
+            } else if (req.body.unit === 'u4') {
+                question.updateOne({ _id: req.body.id }, { $pull: { "hard.u4": { teacher: req.user._id } } }, { multi: true }).then((sx) => {
+                    console.log('success');
+                }).catch((err) => next(err));
+                var data = await question.findById(req.body.id, { "hard.u4": 1 });
+                for (var i = 0; i < req.body.hard.length; i++) {
+                    data.hard.u4.push(req.body.hard[i]);
+                }
+                await data.save()
+                response.statusCode = 200;
+                response.setHeader('Content-Type', 'application/json');
+                response.json({ success: true });
 
-    // Initialize the unit array if it doesn't exist
-    if (!doc.hard[unit]) {
-      doc.hard[unit] = [];
-    }
-
-    // Remove existing questions by this teacher
-    doc.hard[unit] = doc.hard[unit].filter(q => !q.teacher.equals(teacherId));
-
-    // Add the new questions with teacher ID
-    const questionsWithTeacher = newQuestions.map(q => ({
-      ...q,
-      teacher: teacherId,
-      name: q.name || q.text, // handle both name and text properties
-      timestamp: new Date()
-    }));
-
-    console.log('Adding new questions:', questionsWithTeacher);
-
-    // Add new questions
-    doc.hard[unit].push(...questionsWithTeacher);
-
-    // Save the document
-    const savedDoc = await doc.save();
-    console.log('Successfully saved document:', savedDoc.hard[unit].length, 'questions in unit');
-    
-    return savedDoc;
-  } catch (error) {
-    console.error('Error updating questions:', error);
-    throw error;
-  }
-}
-
-hardEditRouter
-  .route('/get')
-  .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
-  .get((_, res) => res.end('GET operation is not performed'))
-  .post(cors.corsWithOptions, authenticate.verifyUser, async (req, res, next) => {
-    try {
-      const { id, unit } = req.body;
-      const questions = await getHardQuestionsByUnit(id, unit);
-      
-      // Add an isEditable flag to each question
-      const questionsWithEditFlag = questions.map(q => ({
-        ...q.toObject(),
-        isEditable: q.teacher.equals(req.user._id)
-      }));
-      
-      res.status(200).json(questionsWithEditFlag);
-    } catch (err) {
-      next(err);
-    }
-  });
-
-hardEditRouter
-  .route('/put')
-  .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
-  .get((_, res) => res.end('GET operation is not performed'))
-  .post((_, res) => res.end('POST operation is not performed'))
-  .put(cors.corsWithOptions, authenticate.verifyUser, async (req, res, next) => {
-    try {
-      console.log('Received update request:', req.body);
-      const { id, unit, hard } = req.body;
-      
-      if (!unit || !id || !hard) {
-        throw new Error('Missing required fields: unit, id, or questions');
-      }
-
-      const result = await updateHardQuestionsByUnit(id, unit, req.user._id, hard);
-      console.log('Update completed successfully');
-      
-      res.status(200).json({ 
-        success: true,
-        message: 'Questions updated successfully',
-        questionCount: result.hard[unit].length
-      });
-    } catch (err) {
-      console.error('Error in put route:', err);
-      next(err);
-    }
-  });
-
-hardEditRouter
-  .route('/')
-  .delete((_, res) => res.end('DELETE operation is not performed'))
-  .put((_, res) => res.end('PUT operation is not performed'));
-
+            } else {
+                question.updateOne({ _id: req.body.id }, { $pull: { "hard.u5": { teacher: req.user._id } } }, { multi: true }).then((sx) => {
+                    console.log('success');
+                }).catch((err) => next(err));
+                var data = await question.findById(req.body.id, { "hard.u5": 1 });
+                for (var i = 0; i < req.body.hard.length; i++) {
+                    data.hard.u5.push(req.body.hard[i]);
+                }
+                await data.save()
+                response.statusCode = 200;
+                response.setHeader('Content-Type', 'application/json');
+                response.json({ success: true });
+            }
+        } catch (err) {
+            console.log(err);
+            next(err);
+        }
+    })
+    .delete((req,res,next)=>{
+        res.end('DELETE Operation is not Performed');
+    })
 module.exports = hardEditRouter;

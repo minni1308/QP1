@@ -87,7 +87,7 @@ const Options = () => {
   const handleSubmit1 = (e) => {
     e.preventDefault();
     
-    const remainingQuestions = questions.filter((_, i) => !removedQuestions[i]);
+    const remainingQuestions = questions.filter((q, i) => !removedQuestions[i]);
     
     const cleanedQuestions = remainingQuestions.map(q => ({
       name: q.name.trim(),
@@ -96,7 +96,17 @@ const Options = () => {
       timestamp: new Date()
     }));
 
-    console.log('Submitting questions:', cleanedQuestions);
+    console.log('Submitting questions:', {
+      totalQuestions: questions.length,
+      remainingQuestions: remainingQuestions.length,
+      deletedQuestions: questions.length - remainingQuestions.length,
+      cleanedQuestions
+    });
+
+    if (remainingQuestions.length === 0) {
+      alert("Please keep at least one question");
+      return;
+    }
 
     setIsLoading(true);
     editQuestions(
