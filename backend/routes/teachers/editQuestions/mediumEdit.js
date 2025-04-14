@@ -8,142 +8,175 @@ mediumEditRouter.use(express.json());
 mediumEditRouter.route('/get')
     .options(cors.corsWithOptions, (req, resp) => { resp.sendStatus(200); })
     .get((req, res, next) => {
-        res.end('GET operation is not Perfomed');
+        res.end('GET operation is not Performed');
     })
     .post(cors.corsWithOptions, authenticate.verifyUser, async (req, response, next) => {
         try {
             if (req.body.unit === 'u1') {
                 var questions = await question.findById(req.body.id, { "medium.u1": 1 })
-                var teacherQuestions = questions.medium.u1.filter((data) => {
-                    return data.teacher.equals(req.user._id);
-                })
                 response.statusCode = 200;
                 response.setHeader('Content-Type', 'application/json');
-                response.json(teacherQuestions);
+                response.json(questions.medium.u1);
             } else if (req.body.unit === 'u2') {
                 var questions = await question.findById(req.body.id, { "medium.u2": 1 })
-                var teacherQuestions = questions.medium.u2.filter((data) => {
-                    return data.teacher.equals(req.user._id);
-                })
                 response.statusCode = 200;
                 response.setHeader('Content-Type', 'application/json');
-                response.json(teacherQuestions);
+                response.json(questions.medium.u2);
             } else if (req.body.unit === 'u3') {
                 var questions = await question.findById(req.body.id, { "medium.u3": 1 })
-                var teacherQuestions = questions.medium.u3.filter((data) => {
-                    return data.teacher.equals(req.user._id);
-                })
                 response.statusCode = 200;
                 response.setHeader('Content-Type', 'application/json');
-                response.json(teacherQuestions);
+                response.json(questions.medium.u3);
             } else if (req.body.unit === 'u4') {
                 var questions = await question.findById(req.body.id, { "medium.u4": 1 })
-                var teacherQuestions = questions.medium.u4.filter((data) => {
-                    return data.teacher.equals(req.user._id);
-                })
                 response.statusCode = 200;
                 response.setHeader('Content-Type', 'application/json');
-                response.json(teacherQuestions);
+                response.json(questions.medium.u4);
             } else {
                 var questions = await question.findById(req.body.id, { "medium.u5": 1 })
-                var teacherQuestions = questions.medium.u5.filter((data) => {
-                    return data.teacher.equals(req.user._id);
-                })
                 response.statusCode = 200;
                 response.setHeader('Content-Type', 'application/json');
-                response.json(teacherQuestions);
+                response.json(questions.medium.u5);
             }
         } catch (err) {
-            console.log(err);
-            next(err);
+            console.error('Error fetching questions:', err);
+            response.statusCode = 500;
+            response.json({ 
+                success: false, 
+                message: 'Failed to fetch questions',
+                error: err.message 
+            });
         }
     })
     .put((req, res, next) => {
-        res.end('PUT operation is not perfromed');
+        res.end('PUT operation is not performed');
     })
     .delete((req, res, next) => {
         res.end('DELETE Operation is not Performed');
-    })
+    });
+
 mediumEditRouter.route('/put')
     .options(cors.corsWithOptions, (req, resp) => { resp.sendStatus(200); })
-    .get((req,res,next)=>{
-        res.end('GET operation is not perfromed');
+    .get((req, res, next) => {
+        res.end('GET operation is not performed');
     })
-    .post((req,res,next)=>{
-        res.end('POST operation is not perfromed');
+    .post((req, res, next) => {
+        res.end('POST operation is not performed');
     })
     .put(cors.corsWithOptions, authenticate.verifyUser, async (req, response, next) => {
         try {
-            if (req.body.unit === 'u1') {
-                question.updateOne({ _id: req.body.id }, { $pull: { "medium.u1": { teacher: req.user._id } } }, { multi: true }).then((sx) => {
-                    console.log('success');
-                }).catch((err) => next(err));
-                var data = await question.findById(req.body.id, { "medium.u1": 1 });
-                for (var i = 0; i < req.body.medium.length; i++) {
-                    data.medium.u1.push(req.body.medium[i]);
-                }
-                await data.save()
-                response.statusCode = 200;
-                response.setHeader('Content-Type', 'application/json');
-                response.json({ success: true });
-            } else if (req.body.unit === 'u2') {
-                question.updateOne({ _id: req.body.id }, { $pull: { "medium.u2": { teacher: req.user._id } } }, { multi: true }).then((sx) => {
-                    console.log('success');
-                }).catch((err) => next(err));
-                var data = await question.findById(req.body.id, { "medium.u2": 1 });
-                for (var i = 0; i < req.body.medium.length; i++) {
-                    data.medium.u2.push(req.body.medium[i]);
-                }
-                await data.save()
-                response.statusCode = 200;
-                response.setHeader('Content-Type', 'application/json');
-                response.json({ success: true });
+            const { id, unit, medium } = req.body; // Destructure the request body
 
-            } else if (req.body.unit === 'u3') {
-                question.updateOne({ _id: req.body.id }, { $pull: { "medium.u3": { teacher: req.user._id } } }, { multi: true }).then((sx) => {
-                    console.log('success');
-                }).catch((err) => next(err));
-                var data = await question.findById(req.body.id, { "medium.u3": 1 });
-                for (var i = 0; i < req.body.medium.length; i++) {
-                    data.medium.u3.push(req.body.medium[i]);
-                }
-                await data.save()
-                response.statusCode = 200;
-                response.setHeader('Content-Type', 'application/json');
-                response.json({ success: true });
-
-            } else if (req.body.unit === 'u4') {
-                question.updateOne({ _id: req.body.id }, { $pull: { "medium.u4": { teacher: req.user._id } } }, { multi: true }).then((sx) => {
-                    console.log('success');
-                }).catch((err) => next(err));
-                var data = await question.findById(req.body.id, { "medium.u4": 1 });
-                for (var i = 0; i < req.body.medium.length; i++) {
-                    data.medium.u4.push(req.body.medium[i]);
-                }
-                await data.save()
-                response.statusCode = 200;
-                response.setHeader('Content-Type', 'application/json');
-                response.json({ success: true });
-
-            } else {
-                question.updateOne({ _id: req.body.id }, { $pull: { "medium.u5": { teacher: req.user._id } } }, { multi: true }).then((sx) => {
-                    console.log('success');
-                }).catch((err) => next(err));
-                var data = await question.findById(req.body.id, { "medium.u5": 1 });
-                for (var i = 0; i < req.body.medium.length; i++) {
-                    data.medium.u5.push(req.body.medium[i]);
-                }
-                await data.save()
-                response.statusCode = 200;
-                response.setHeader('Content-Type', 'application/json');
-                response.json({ success: true });
+            // Validate input
+            if (!id || !unit || !medium) {
+                response.statusCode = 400;
+                return response.json({ 
+                    success: false, 
+                    message: 'Missing required fields' 
+                });
             }
+
+            // Create the update path based on the unit
+            const updatePath = `medium.${unit}`;
+
+            // First, remove the existing questions for this unit
+            await question.findByIdAndUpdate(
+                id,
+                { $set: { [updatePath]: [] } },
+                { new: true }
+            );
+
+            // Then add the new/updated questions
+            const updatedDoc = await question.findByIdAndUpdate(
+                id,
+                { 
+                    $set: { 
+                        [updatePath]: medium.map(q => ({
+                            name: q.name,
+                            teacher: req.user._id
+                        }))
+                    } 
+                },
+                { new: true }
+            );
+
+            if (!updatedDoc) {
+                response.statusCode = 404;
+                return response.json({ 
+                    success: false, 
+                    message: 'Question not found' 
+                });
+            }
+
+            response.statusCode = 200;
+            response.setHeader('Content-Type', 'application/json');
+            response.json({ 
+                success: true,
+                message: 'Questions updated successfully',
+                data: updatedDoc[updatePath]
+            });
+
         } catch (err) {
-            console.log(err);
-            next(err);
+            console.error('Error updating questions:', err);
+            response.statusCode = 500;
+            response.json({ 
+                success: false, 
+                message: 'Failed to update questions',
+                error: err.message 
+            });
         }
     })
-    .delete((req,res,next)=>{
-        res.end('DELETE Operation is not Performed');
-    })
+    .delete(cors.corsWithOptions, authenticate.verifyUser, async (req, response, next) => {
+        try {
+            const { id, unit, questionIds } = req.body;
+
+            if (!id || !unit || !questionIds) {
+                response.statusCode = 400;
+                return response.json({ 
+                    success: false, 
+                    message: 'Missing required fields' 
+                });
+            }
+
+            const updatePath = `medium.${unit}`;
+
+            // Remove specific questions by their IDs
+            const updatedDoc = await question.findByIdAndUpdate(
+                id,
+                { 
+                    $pull: { 
+                        [updatePath]: { 
+                            _id: { $in: questionIds } 
+                        } 
+                    } 
+                },
+                { new: true }
+            );
+
+            if (!updatedDoc) {
+                response.statusCode = 404;
+                return response.json({ 
+                    success: false, 
+                    message: 'Question not found' 
+                });
+            }
+
+            response.statusCode = 200;
+            response.json({ 
+                success: true,
+                message: 'Questions deleted successfully',
+                data: updatedDoc[updatePath]
+            });
+
+        } catch (err) {
+            console.error('Error deleting questions:', err);
+            response.statusCode = 500;
+            response.json({ 
+                success: false, 
+                message: 'Failed to delete questions',
+                error: err.message 
+            });
+        }
+    });
+
 module.exports = mediumEditRouter;

@@ -77,7 +77,11 @@
 
       .quetable tbody tr {
         display: block;
-        margin-bottom: 15px;
+        margin-bottom: 70px;
+      }
+
+      .quetable tbody tr:nth-child(3n) {
+        margin-bottom: 100px;
       }
 
       .quetable th {
@@ -106,11 +110,11 @@
 
         <div class="name-code-line">
           <span class="name-label">Name: </span>
-          <span class="course-code-header">{{subjectcode}}</span>
+          <span class="course-code-header">{{branch}}</span>
         </div>
 
         <p class="instructions-paragraph">
-          When answering the questions below, make sure to show all of your work. Pay attention to the point values on each question. State your assumptions, and explain your answers thoroughly. Remember that an explanation is expected with every answer except the multiple choice and true/false questions when the answer is true. Use blank paper if you do not have enough room. This material is copyright {{Year}} by Michael Weeks, except where otherwise noted, and reproductions are not authorized.
+          When answering the questions below, make sure to show all of your work. Pay attention to the point values on each question. State your assumptions, and explain your answers thoroughly. Remember that an explanation is expected with every answer except the multiple choice and true/false questions when the answer is true. Use blank paper if you do not have enough room.
           <br>
           Time: {{starttime}} to {{endtime}} | Total Marks: {{marks}}
         </p>

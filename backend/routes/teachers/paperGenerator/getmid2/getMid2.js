@@ -123,26 +123,35 @@ mid2Router.route('/')
                     })
                     hb.registerHelper('question', function (data) {
                         var str = '';
+                        var questionNumber = 1; // Track the sequential question number
+                        
                         for (var i = 0; i < data.length; i++) {
                             if (typeof (data[i]) === 'object') {
-                                str + '<tr>'
-                                str += '<td class="quetable cen">' + (i + 1) + String.fromCharCode(97) + ').' + '</td>';
+                                // This is a question with two parts (a and b)
+                                // Now we'll make them separate sequential questions
+                                
+                                str += '<tr>'
+                                str += '<td class="quetable cen">' + questionNumber + '.' + '</td>'; // First part becomes question #
                                 str += '<td class="quetable tdcenter">' + data[i][0] + '</td>';
                                 str += '<td class="quetable cen">' + 2 + '</td>';
                                 str += '</tr>'
+                                questionNumber++; // Increment for the next question
+                                
                                 str += '<tr>'
-                                str += '<td class="quetable cen">' + (i + 1) + String.fromCharCode(98) + ').' + '</td>';
+                                str += '<td class="quetable cen">' + questionNumber + '.' + '</td>'; // Second part becomes next question #
                                 str += '<td class="quetable tdcenter">' + data[i][1] + '</td>';
                                 str += '<td class="quetable cen">' + 3 + '</td>';
                                 str += '</tr>'
+                                questionNumber++; // Increment for the next question
                             } else {
+                                // This is a standalone question
                                 str += '<tr>'
-                                str += '<td class="quetable cen">' + (i + 1) + ').' + '</td>';
+                                str += '<td class="quetable cen">' + questionNumber + '.' + '</td>'; // Changed from (i+1) to questionNumber
                                 str += '<td class="quetable tdcenter">' + data[i] + '</td>';
                                 str += '<td class="quetable cen">' + 5 + '</td>';
                                 str += '</tr>'
+                                questionNumber++; // Increment for the next question
                             }
-                            str += '</tr>';
                         }
                         return new hb.SafeString(str);
                     });
@@ -152,6 +161,7 @@ mid2Router.route('/')
                     const result = template(data);
                     const html = result;
                     const browser = await puppeteer.launch({
+                      executablePath:'/opt/homebrew/bin/chromium',
                         args: [
                             '--no-sandbox',
                             '--disable-setuid-sandbox',

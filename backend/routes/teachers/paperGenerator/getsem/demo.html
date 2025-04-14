@@ -4,93 +4,71 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Semester Question Paper</title>
+    <title>{{subjectname}} - Semester Exam</title>
     <style>
       body {
-        font-family: Arial, sans-serif;
-        margin: 0;
+        font-family: 'Times New Roman', Times, serif;
+        margin: 40px;
         padding: 0;
+        font-size: 12pt;
       }
 
-      header {
-        padding: 10px 20px;
+      .main {
+        padding: 0;
+        width: 100%;
+        max-width: 8.5in;
+        margin: auto;
       }
 
-      .code {
-        display: flex;
-        justify-content: space-between;
-        margin-top: -20px;
+      .paper-header {
+        margin-bottom: 15px;
       }
 
-      .pcode {
-        margin: 10px 0;
-      }
-
-      .regulation {
-        border: 1px solid black;
-        padding: 10px;
-        margin-top: 10px;
-      }
-
-      .cllgename {
-        text-align: center;
-        text-transform: uppercase;
-        font-size: 1.5em;
-        font-weight: bold;
-        margin: 5px 0;
-      }
-
-      .cllgetype {
-        text-align: center;
-        font-size: 1em;
-        font-weight: bold;
-      }
-
-      .examdetails {
-        text-align: center;
-        margin: 5px 0;
-        font-size: 1.2em;
-        font-weight: 500;
-      }
-
-      .subjectname {
-        text-align: center;
-        text-transform: uppercase;
-        font-size: 1.5em;
-        font-weight: 600;
-      }
-
-      .subjectdetail {
-        text-align: center;
+      .exam-main-title {
+        text-align: left;
+        font-size: 1.1em;
         font-weight: normal;
-        font-size: 1.1em;
+        margin-bottom: 25px;
       }
 
-      .examdet {
+      .name-code-line {
         display: flex;
         justify-content: space-between;
-        margin: 10px;
-        font-size: 1.2em;
-      }
-
-      .exampattern {
+        align-items: baseline;
+        margin-bottom: 5px;
+        padding-bottom: 5px;
         font-size: 1.1em;
-        text-align: justify;
-        padding: 0 20px;
+        border-bottom: 1px solid black;
+      }
+
+      .name-label {
+        width: 50%;
+      }
+
+      .course-code-header {
+        font-weight: bold;
+        text-align: right;
+        margin-right: 10%;
+      }
+
+      .instructions-paragraph {
+        font-size: 1em;
+        text-align: left;
         margin-top: 10px;
+        margin-bottom: 25px;
+        line-height: 1.4;
       }
 
-      .exampattern p {
-        margin: 4px 0;
-      }
-
+      /* Sections */
       .secdetails {
         display: flex;
         justify-content: space-between;
         width: 90%;
-        margin: 15px auto 5px;
-        font-size: 1.3em;
+        margin: 25px auto 5px;
+        font-size: 1.2em;
         font-weight: 600;
+        border-bottom: 1px solid #ccc;
+        padding-bottom: 5px;
       }
 
       .questions {
@@ -100,68 +78,66 @@
       }
 
       .question {
-        margin: 7px 0;
-        font-size: 1.6em;
+        margin: 15px 0 60px 0; /* Increased bottom margin for answer space */
+        font-size: 1.1em;
       }
 
       .multi {
         padding-left: 20px;
+        margin-top: 10px;
+      }
+
+      .multi span {
+        display: block;
+        margin-bottom: 5px;
       }
 
       .limiters {
         text-align: center;
-        font-size: 1.2em;
+        font-size: 1.1em;
         font-weight: bold;
-        margin: 5px 0;
+        margin: 15px 0;
       }
     </style>
   </head>
 
   <body>
-    <header>
-      <section class="code">
-        <div class="pcode">Code: {{code}}</div>
-        <div class="regulation">{{regulation}}</div>
-      </section>
-
-      <section>
-        <div class="cllgename">B V RAJU INSTITUTE OF TECHNOLOGY</div>
-        <div class="cllgetype">(UGC AUTONOMOUS)</div>
-        <div class="examdetails">
-          B.Tech {{Year}} Year {{sem}} Semester Regular/Supplementary Examinations, {{month}} {{year}}
+    <div class="main">
+      <div class="paper-header">
+        <div class="exam-main-title">
+          {{subjectname}} - Semester Exam - {{month}} {{year}}
         </div>
-        <div class="subjectname">{{subjectname}}</div>
-        <div class="subjectdetail">{{subjecttype}}</div>
-      </section>
 
-      <section class="examdet">
-        <div>Time: {{time}} Hours</div>
-        <div>Max Marks: {{marks}}</div>
-      </section>
-
-      <section class="exampattern">
-        <p><strong>Note:</strong> This Question Paper Contains Two Parts A and B.</p>
-        <p>Part A is compulsory and carries 20 marks. Answer all questions in Part A at one place only.</p>
-        <p>Part B consists of 10 questions. Answer any five (one full question from each unit). Each question carries 10 marks and may have a, b, c as sub-questions.</p>
-      </section>
-    </header>
-
-    <main>
-      <section>
-        <div class="secdetails">
-          <span>Part - A</span>
-          <span>(2 x 10 = 20)</span>
+        <div class="name-code-line">
+          <span class="name-label">Name: </span>
+          <span class="course-code-header">{{code}}</span>
         </div>
-        {{small squestion}}
-      </section>
 
-      <section>
-        <div class="secdetails">
-          <span>Part - B</span>
-          <span>(5 x 10 = 50)</span>
-        </div>
-        {{large lquestion}}
-      </section>
-    </main>
+        <p class="instructions-paragraph">
+          When answering the questions below, make sure to show all of your work. Pay attention to the point values on each question. State your assumptions, and explain your answers thoroughly.
+          <br>
+          Time: {{time}} Hours | Max Marks: {{marks}}
+          <br><br>
+        </p>
+      </div>
+
+      <main>
+        <section>
+          <div class="secdetails">
+            <span>Part - A</span>
+            <span>(2 x 10 = 20)</span>
+          </div>
+          {{small squestion}}
+        </section>
+
+        <section>
+          <div class="secdetails">
+            <span>Part - B</span>
+            <span>(5 x 10 = 50)</span>
+          </div>
+          {{large lquestion}}
+        </section>
+      </main>
+    </div>
   </body>
 </html>

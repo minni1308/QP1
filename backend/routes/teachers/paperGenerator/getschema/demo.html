@@ -4,70 +4,67 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Question Paper</title>
+    <title>{{subjectname}} - Question Paper</title>
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
       body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        padding: 20px;
-        line-height: 1.6;
+        font-family: 'Times New Roman', Times, serif;
+        margin: 40px;
+        padding: 0;
+        font-size: 12pt;
       }
 
-      .code {
-        display: flex;
-        justify-content: flex-end;
-        margin-bottom: 10px;
+      .main {
+        padding: 0;
+        width: 100%;
+        max-width: 8.5in;
+        margin: auto;
+      }
+
+      .paper-header {
+        margin-bottom: 15px;
+      }
+
+      .exam-main-title {
+        text-align: left;
         font-size: 1.1em;
-        font-weight: 500;
+        font-weight: normal;
+        margin-bottom: 25px;
       }
 
-      .college-name {
-        text-align: center;
-        text-transform: uppercase;
-        font-size: 1.6em;
-        font-weight: bold;
-        margin: 5px 0;
-      }
-
-      .college-type {
-        text-align: center;
-        font-size: 1em;
-        font-weight: bold;
-        margin-bottom: 10px;
-      }
-
-      .exam-title {
-        text-align: center;
-        font-size: 1.2em;
-        font-weight: 600;
-        margin-bottom: 5px;
-      }
-
-      .subject-name {
-        text-align: center;
-        text-transform: uppercase;
-        font-size: 1.4em;
-        font-weight: 600;
-        margin: 10px 0;
-      }
-
-      .exam-meta {
+      .name-code-line {
         display: flex;
         justify-content: space-between;
-        margin: 15px 10px;
-        font-size: 1.2em;
-        font-weight: 500;
+        align-items: baseline;
+        margin-bottom: 5px;
+        padding-bottom: 5px;
+        font-size: 1.1em;
+        border-bottom: 1px solid black;
       }
 
+      .name-label {
+        width: 50%;
+      }
+
+      .course-code-header {
+        font-weight: bold;
+        text-align: right;
+        margin-right: 10%;
+      }
+
+      .instructions-paragraph {
+        font-size: 1em;
+        text-align: left;
+        margin-top: 10px;
+        margin-bottom: 25px;
+        line-height: 1.4;
+      }
+
+      /* Section container */
       .section-container {
         margin-top: 20px;
       }
 
+      /* Section headers */
       .secdetails {
         display: flex;
         justify-content: space-between;
@@ -78,69 +75,52 @@
         padding-bottom: 5px;
       }
 
+      /* Question list */
       .question-list {
-        padding-left: 25px;
+        padding-left: 0;
         margin-bottom: 15px;
+        list-style-position: outside;
       }
 
+      /* Individual question */
       .question {
         font-size: 1.1em;
-        margin-bottom: 5px;
+        margin-bottom: 40px; /* Add space between questions */
+        list-style-type: decimal;
       }
 
       /* Print styling */
       @media print {
         body {
-          padding: 0;
-        }
-
-        .code,
-        .exam-meta {
-          font-size: 1em;
-        }
-
-        .college-name {
-          font-size: 1.5em;
-        }
-
-        .subject-name {
-          font-size: 1.3em;
-        }
-
-        .question {
-          font-size: 1em;
-        }
-
-        .secdetails {
-          font-size: 1em;
+          padding: 20px;
         }
       }
     </style>
   </head>
 
   <body>
-    <!-- Paper Code -->
-    <div class="code">Code: {{code}}</div>
+    <div class="main">
+      <div class="paper-header">
+        <div class="exam-main-title">
+          {{subjectname}} - {{month}} {{year}}
+        </div>
 
-    <!-- Header -->
-    <header>
-      <div class="college-name">B V Raju Institute of Technology</div>
-      <div class="college-type">(UGC Autonomous)</div>
-      <div class="exam-title">
-        B.Tech {{subyear}} Year {{subsem}} Training Examination, {{month}} {{year}}
+        <div class="name-code-line">
+          <span class="name-label">Name: </span>
+          <span class="course-code-header">{{code}}</span>
+        </div>
+
+        <p class="instructions-paragraph">
+          When answering the questions below, make sure to show all of your work. Pay attention to the point values on each question. State your assumptions, and explain your answers thoroughly. Remember that an explanation is expected with every answer except the multiple choice and true/false questions when the answer is true. Use blank paper if you do not have enough room.
+          <br>
+          Time: {{time}} Hours | Total Marks: {{maxMarks}}
+        </p>
       </div>
-      <div class="subject-name">{{subjectname}}</div>
-    </header>
 
-    <!-- Exam Duration and Max Marks -->
-    <div class="exam-meta">
-      <div>Time: {{time}} Hours</div>
-      <div>Max Marks: {{maxMarks}}</div>
-    </div>
-
-    <!-- Section-wise Questions -->
-    <div class="section-container">
-      {{section details}}
+      <!-- Section-wise Questions - keep the original section format but improve spacing -->
+      <div class="section-container">
+        {{section details}}
+      </div>
     </div>
   </body>
 </html>

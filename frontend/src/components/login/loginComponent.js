@@ -68,7 +68,15 @@ const Login = () => {
   if (isLoading) return <WaveTopBottomLoading />;
 
   if (success) {
-    navigate("/teacher/landing");
+    // Get the current user details from localStorage
+    const currentUser = localStorage.get("user");
+    
+    // Navigate based on admin flag
+    if (currentUser && currentUser.admin) {
+      navigate("/admin/home");
+    } else {
+      navigate("/teacher/landing");
+    }
     return null;
   }
 
