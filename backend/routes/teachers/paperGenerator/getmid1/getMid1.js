@@ -126,26 +126,33 @@ mid1Router.route('/')
                     })
                     hb.registerHelper('question', function (data) {
                         var str = '';
+                        let qCounter = 1; // Sequential question counter
+                        
                         for (var i = 0; i < data.length; i++) {
                             if (typeof (data[i]) === 'object') {
-                                str + '<tr>'
-                                str += '<td class="quetable cen">' + (i + 1) + String.fromCharCode(97) + ').' + '</td>';
+                                // First part of the question pair
+                                str += '<tr>'
+                                str += '<td class="quetable cen">' + qCounter + '.' + '</td>'; // Sequential number
                                 str += '<td class="quetable tdcenter">' + data[i][0] + '</td>';
                                 str += '<td class="quetable cen">' + 2 + '</td>';
                                 str += '</tr>'
+                                qCounter++; // Increment counter
+                                
+                                // Second part of the question pair
                                 str += '<tr>'
-                                str += '<td class="quetable cen">' + (i + 1) + String.fromCharCode(98) + ').' + '</td>';
+                                str += '<td class="quetable cen">' + qCounter + '.' + '</td>'; // Sequential number
                                 str += '<td class="quetable tdcenter">' + data[i][1] + '</td>';
                                 str += '<td class="quetable cen">' + 3 + '</td>';
                                 str += '</tr>'
+                                qCounter++; // Increment counter
                             } else {
                                 str += '<tr>'
-                                str += '<td class="quetable cen">' + (i + 1) + ').' + '</td>';
+                                str += '<td class="quetable cen">' + qCounter + '.' + '</td>'; // Sequential number
                                 str += '<td class="quetable tdcenter">' + data[i] + '</td>';
                                 str += '<td class="quetable cen">' + 5 + '</td>';
                                 str += '</tr>'
+                                qCounter++; // Increment counter
                             }
-                            str += '</tr>';
                         }
                         return new hb.SafeString(str);
                     });
