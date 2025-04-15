@@ -8,11 +8,16 @@ questionRouter.use(express.json());
 
 // 🚀 Utility to merge unit-wise questions dynamically
 const mergeQuestions = (target, source) => {
-  const difficulties = ["easy", "medium", "hard"];
+  const difficulties = ["easy", "medium", "hard", "mcq"];
   const units = ["u1", "u2", "u3", "u4", "u5"];
 
   for (const diff of difficulties) {
+    if (!target[diff]) target[diff] = {};
+    if (!source[diff]) continue;
+
     for (const unit of units) {
+      if (!target[diff][unit]) target[diff][unit] = [];
+
       if (source[diff][unit]?.length) {
         target[diff][unit].push(...source[diff][unit]);
       }
@@ -61,9 +66,10 @@ questionRouter
           // Create new question document
           await question.create({
             subject: subjectId,
-            easy: payload.easy,
-            medium: payload.medium,
-            hard: payload.hard,
+            easy: payload.easy || { u1: [], u2: [], u3: [], u4: [], u5: [] },
+            medium: payload.medium || { u1: [], u2: [], u3: [], u4: [], u5: [] },
+            hard: payload.hard || { u1: [], u2: [], u3: [], u4: [], u5: [] },
+            mcq: payload.mcq || { u1: [], u2: [], u3: [], u4: [], u5: [] }
           });
         } else {
           // Merge into existing document

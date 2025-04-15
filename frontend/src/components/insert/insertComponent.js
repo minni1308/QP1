@@ -96,22 +96,27 @@ const Insert = ({
               color: "#333",
               marginBottom: "0.5rem",
               display: "block"
-            }}>Marks</Label>
+            }}>Type/Marks</Label>
             <Input
-              type="text"
+              type="select"
               name="marks"
               value={formd.marks}
               onChange={(e) => handleInput(index, -1, e)}
-              pattern="[25]|10"
-              placeholder="Enter marks (2, 5, or 10)"
               required
               style={{
                 borderRadius: "6px",
                 border: "1px solid #ccc",
                 padding: "12px",
-                fontSize: "1rem"
+                fontSize: "1rem",
+                height: "47px"
               }}
-            />
+            >
+              <option value="">Select Type</option>
+              <option value="mcq">MCQ</option>
+              <option value="2">Easy (2 Marks)</option>
+              <option value="5">Medium (5 Marks)</option>
+              <option value="10">Hard (10 Marks)</option>
+            </Input>
           </FormGroup>
         </Col>
       </Row>

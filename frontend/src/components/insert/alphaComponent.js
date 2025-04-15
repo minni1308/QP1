@@ -171,16 +171,37 @@ const Alpha = () => {
           easy: { u1: [], u2: [], u3: [], u4: [], u5: [] },
           medium: { u1: [], u2: [], u3: [], u4: [], u5: [] },
           hard: { u1: [], u2: [], u3: [], u4: [], u5: [] },
+          mcq: { u1: [], u2: [], u3: [], u4: [], u5: [] },
         };
       }
-      const level =
-        q.marks === "2" ? "easy" : q.marks === "5" ? "medium" : "hard";
+      
+      let level;
+      if (q.marks === "mcq") {
+        level = "mcq";
+      } else if (q.marks === "2") {
+        level = "easy";
+      } else if (q.marks === "5") {
+        level = "medium";
+      } else if (q.marks === "10") {
+        level = "hard";
+      } else {
+        console.warn(`Invalid type/marks value: ${q.marks} for subject ${q.code.value}`);
+        return;
+      }
+
       const unitKey = `u${q.unit}`;
+      if (!grouped[q.code.id][level][unitKey]) {
+        console.warn(`Invalid unit key: ${unitKey} for level ${level}`);
+        return;
+      }
+      
       q.values.forEach((val) => {
-        grouped[q.code.id][level][unitKey].push({
-          name: val.value.trim(),
-          teacher: localStorage.get("user").id,
-        });
+        if (val.value && val.value.trim()) {
+          grouped[q.code.id][level][unitKey].push({
+            name: val.value.trim(),
+            teacher: localStorage.get("user").id,
+          });
+        }
       });
     });
 
