@@ -19,34 +19,35 @@ opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 opts.secretOrKey = config.secretKey;
 
 
-exports.jwtPassport = passport.use(new JwtStrategy(opts, (jwt_payload, done) => {
-        console.log("JWT payload: ", jwt_payload);
-        teacher.findOne({_id: jwt_payload._id}, (err, user) => {
-            if (err) {
-                return done(err, false);
-            }
-            else if (user) {
-                return done(null, user);
-            }
-            else {
-                return done(null, false);
-            }
-        });
+exports.jwtPassport = passport.use(new JwtStrategy(opts, async (jwt_payload, done) => {
+    try {
+        const user = await teacher.findOne({_id: jwt_payload._id});
+        if (user) {
+            return done(null, user);
+        }
+        return done(null, false);
+    } catch (err) {
+        return done(err, false);
+    }
 }));
 
 exports.verifyUser = passport.authenticate('jwt', {session: false});
 
-exports.verifyAdmin= (req,res,next) => {
-        console.log(req.user.admin);
-        if(req.user.admin){
-            next();
-        }
-        else{
-            var err = new Error(' You are not Authorized to perform this operation! ');
-            err.status = 403;
-            return next(err);
-       }
+exports.verifyAdmin = (req, res, next) => {
+    if (!req.user) {
+        const err = new Error('Unauthorized');
+        err.status = 401;
+        return next(err);
     }
+    
+    if (req.user.admin) {
+        return next();
+    }
+    
+    const err = new Error('You are not authorized to perform this operation');
+    err.status = 403;
+    return next(err);
+};
 
 
 passport.use(new LocalStrategy(teacher.authenticate()));

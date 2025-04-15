@@ -41,6 +41,11 @@ const AdminLoginNav = ({ user }) => {
                 Subjects
               </NavLink>
             </NavItem>
+            <NavItem>
+              <NavLink tag={Link} to="/admin/teacher-subjects">
+                Manage Teacher Subjects
+              </NavLink>
+            </NavItem>
 
             <UncontrolledDropdown nav inNavbar>
               <DropdownToggle nav caret>

@@ -74,6 +74,8 @@ const generateQuestionsRouter = require("./routes/teachers/generateQuestion/gene
 // Admin routes
 const adminDepartment = require('./routes/admin/department');
 const adminSubject = require('./routes/admin/subject');
+const teacherSubjectsRouter = require('./routes/admin/teacherSubjects');
+const adminTeachers = require('./routes/admin/teachers');
 
 // ─────────────────────────────────────────────────────────────
 // Route Mounting
@@ -101,6 +103,8 @@ app.use('/teacher/generate', generateQuestionsRouter);
 
 app.use('/admin/department', adminDepartment);
 app.use('/admin/subject', adminSubject);
+app.use('/admin/teachersubjects', teacherSubjectsRouter);
+app.use('/admin/teachers', adminTeachers);
 
 // ─────────────────────────────────────────────────────────────
 // Error Handling

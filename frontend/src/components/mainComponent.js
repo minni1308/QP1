@@ -20,6 +20,7 @@ import Options from "./edit/optionComponent";
 import Department from "./Admin/department";
 import Subject from "./Admin/subject";
 import AdminHome from "./Admin/adminHome";
+import TeacherSubjectsManager from "./Admin/TeacherSubjectsManager";
 
 import localStorage from "local-storage";
 import DisplayGeneratedQuestionsComponent from "./teacher/DisplayGeneratedQuestionsComponent";
@@ -68,6 +69,9 @@ const Main = () => {
         } />
         <Route path="/admin/home" element={
           <PrivateRoute adminOnly><AdminHome /></PrivateRoute>
+        } />
+        <Route path="/admin/teacher-subjects" element={
+          <PrivateRoute adminOnly><TeacherSubjectsManager /></PrivateRoute>
         } />
 
         {/* Teacher Routes */}

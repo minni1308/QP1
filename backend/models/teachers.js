@@ -19,7 +19,11 @@ const teacherSchema = new Schema({
     admin:{
         type: Boolean,
         default: false 
-    }
+    },
+    teachingSubjects: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'subject'  // Changed to match the exact model name used in subject.js
+    }]
 },{
     timestamps: true
 }

@@ -15,6 +15,27 @@ const sendResponse = (res, statusCode, payload) => {
 };
 
 /**
+ * GET ALL SUBJECTS
+ */
+subjectRouter
+  .route("/all")
+  .options(cors.corsWithOptions, (_, res) => res.sendStatus(200))
+  .get(cors.cors, authenticate.verifyUser, authenticate.verifyAdmin, async (req, res, next) => {
+    try {
+      const subjects = await Subject.find().populate('department');
+      const list = subjects.map(sub => ({
+        _id: sub._id,
+        name: sub.name,
+        code: sub.code,
+        department: sub.department
+      }));
+      return sendResponse(res, 200, { success: true, list });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+/**
  * GET SUBJECT(S) by:
  * - Department name + year + sem
  * - Department name + year
