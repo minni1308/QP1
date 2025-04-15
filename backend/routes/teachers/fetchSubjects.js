@@ -12,7 +12,10 @@ subjectRouter.route('/')
   .get(cors.cors, authenticate.verifyUser, async (req, res, next) => {
     try {
       const subjects = await Subject.find().populate('department');
-      res.status(200).json(subjects);
+      res.status(200).json({
+        success: true,
+        list: subjects
+      });
     } catch (err) {
       next(err);
     }

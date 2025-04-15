@@ -15,6 +15,7 @@ import Details from "./numberComponent";
 import { postQuestion, fetchSubjects } from "../ActionCreators";
 import localStorage from "local-storage";
 import { WaveTopBottomLoading } from "react-loadingg";
+import { baseUrl } from "../../shared/baseUrl";
 
 const Alpha = () => {
   const [options, setOptions] = useState([]);
@@ -31,31 +32,61 @@ const Alpha = () => {
     },
   ]);
 
-  // Fetch subjects on mount
+  const getAuthHeaders = () => ({
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${localStorage.get('token')}`
+  });
+
+  // Fetch teacher's subjects on mount
   useEffect(() => {
     if (options.length === 0) {
       setIsloading(true);
-      fetchSubjects()
-        .then((res) => res.json())
-        .then((subjects) => {
-          const opts = subjects.map((subj) => ({
+      const user = localStorage.get('user');
+      
+      // Fetch teacher's assigned subjects
+      fetch(`${baseUrl}admin/teachersubjects/${user.id}`, {
+        headers: getAuthHeaders()
+      })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Failed to fetch teacher subjects');
+        }
+        return res.json();
+      })
+      .then(data => {
+        if (!data.success || !Array.isArray(data.subjects)) {
+          console.warn('No subjects found or invalid response format');
+          setOptions([]);
+          return;
+        }
+
+        const opts = data.subjects
+          .filter(subj => subj && subj.name && subj.code) // Filter out invalid subjects
+          .map((subj) => ({
             id: subj._id,
             label: subj.name,
             value: subj.code,
-            depId: subj.department._id,
-            depName: subj.department.name,
-            year: subj.department.year,
-            semester: subj.department.semester,
+            depId: subj.department?._id,
+            depName: subj.department?.name,
+            year: subj.department?.year,
+            semester: subj.department?.semester,
           }));
-          setOptions(opts);
-          setIsloading(false);
-        })
-        .catch(() => {
-          setIsloading(false);
-          alert("Cannot Connect to Server!!!, Logging Out...");
-          localStorage.clear();
-          window.location.reload();
-        });
+        
+        if (opts.length === 0) {
+          console.warn('No subjects assigned to this teacher');
+        } else {
+          console.log('Loaded subjects:', opts);
+        }
+        
+        setOptions(opts);
+      })
+      .catch((error) => {
+        console.error('Error fetching subjects:', error);
+        alert("Error loading subjects: " + error.message);
+      })
+      .finally(() => {
+        setIsloading(false);
+      });
     }
   }, [options.length]);
 

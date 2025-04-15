@@ -98,17 +98,36 @@ router.route('/remove')
 // GET endpoint to fetch teacher's subjects
 router.route('/:teacherId')
     .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
-    .get(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, async (req, res) => {
+    .get(cors.corsWithOptions, authenticate.verifyUser, async (req, res) => {
         try {
+            console.log('Fetching subjects for teacher:', req.params.teacherId);
+            console.log('Requesting user:', req.user._id);
+            
+            // Check if user is requesting their own subjects or is an admin
+            if (!req.user.admin && req.user._id.toString() !== req.params.teacherId) {
+                console.log('Authorization failed: User can only view their own subjects');
+                return res.status(403).json({
+                    success: false,
+                    message: 'You can only view your own subjects'
+                });
+            }
+
             const teacher = await teachers.findById(req.params.teacherId)
-                .populate('teachingSubjects');
+                .populate({
+                    path: 'teachingSubjects',
+                    populate: { path: 'department' }
+                });
 
             if (!teacher) {
+                console.log('Teacher not found:', req.params.teacherId);
                 return res.status(404).json({
                     success: false,
                     message: 'Teacher not found'
                 });
             }
+
+            console.log('Found teacher:', teacher.name);
+            console.log('Teaching subjects:', teacher.teachingSubjects);
 
             res.status(200).json({
                 success: true,

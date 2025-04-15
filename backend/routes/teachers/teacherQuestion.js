@@ -23,15 +23,20 @@ const mergeQuestions = (target, source) => {
 questionRouter
   .route("/get")
   .options(cors.corsWithOptions, (_, res) => res.sendStatus(200))
-  .get(cors.corsWithOptions, authenticate.verifyUser, async (_, res, next) => {
+  .get(cors.corsWithOptions, authenticate.verifyUser, async (req, res, next) => {
     try {
       const list = await question.find({}, { subject: 1 }).populate({
         path: "subject",
         populate: { path: "department" },
       });
 
+      if (!list) {
+        return res.status(200).json([]);
+      }
+
       res.status(200).json(list);
     } catch (err) {
+      console.error('Error fetching questions:', err);
       next(err);
     }
   })

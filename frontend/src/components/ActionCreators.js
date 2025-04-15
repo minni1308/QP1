@@ -2,13 +2,10 @@ import localStorage from "local-storage";
 import { baseUrl } from "../url";
 
 // Helper to construct auth headers
-export const getAuthHeaders = (contentType = true) => {
-  const headers = {
-    Authorization: "Bearer " + localStorage.get("token"),
-  };
-  if (contentType) headers["Content-Type"] = "application/json";
-  return headers;
-};
+export const getAuthHeaders = () => ({
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${localStorage.get('token')}`
+});
 
 // ✅ Logout
 export const postLogout = () => {
@@ -18,8 +15,8 @@ export const postLogout = () => {
 
 // ✅ Teacher APIs
 export const fetchSubjects = () =>
-  fetch(`${baseUrl}/teacher/subject/`, {
-    headers: getAuthHeaders(false),
+  fetch(`${baseUrl}/teacher/subject`, {
+    headers: getAuthHeaders()
   });
 
 export const postQuestion = (question) =>
@@ -31,7 +28,7 @@ export const postQuestion = (question) =>
 
 export const getSubjectDetails = () =>
   fetch(`${baseUrl}/teacher/question/get`, {
-    headers: getAuthHeaders(false),
+    headers: getAuthHeaders()
   });
 
 export const getQuestions = (details, difficulty) =>
