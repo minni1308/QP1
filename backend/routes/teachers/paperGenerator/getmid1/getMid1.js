@@ -2,7 +2,6 @@ var express = require('express');
 var mid1Router = express.Router();
 var authenticate = require('../../../../authenticate');
 var cors = require('../../../cors');
-
 var question = require('../../../../models/questions');
 
 const fs = require('fs')
@@ -16,26 +15,46 @@ const random = require('random');
 var seedrandom = require('seedrandom');
 random.use(seedrandom('qpgenerator'));
 
+// Define mark distribution (Total 75 marks)
+const markDistribution = {
+    mcq: { count: 15, marks: 1 },     // 15 × 1 = 15 marks
+    easy: { count: 6, marks: 5 },      // 6 × 5 = 30 marks
+    medium: { count: 3, marks: 7 },    // 3 × 7 = 21 marks
+    hard: { count: 1, marks: 9 }       // 1 × 9 = 9 marks
+};
 
 mid1Router.use(express.json());
+
 mid1Router.route('/')
     .options(cors.corsWithOptions, (req, resp) => { resp.sendStatus(200); })
     .get((req, res, next) => {
         res.end('GET Operation is not Performed');
     })
-    .post(cors.corsWithOptions, authenticate.verifyUser, (req, response, next) => {
-        async function getTemplateHtml() {
-            console.log("Loading template file in memory")
-            try {
-                const invoicePath = path.resolve("routes/teachers/paperGenerator/getmid1" + "/demo.html");
-                console.log(invoicePath);
-                return await readFile(invoicePath, 'utf8');
-            } catch (err) {
-                return Promise.reject("Could not load html template");
+    .post(cors.corsWithOptions, authenticate.verifyUser, async (req, response, next) => {
+        try {
+            console.log("Received request body:", req.body);
+            
+            if (!req.body.id) {
+                return response.status(400).send('Missing question document ID');
             }
-        }
-        async function generatePdf() {
-            const questions = await question.findById(req.body.id, { easy: 1, medium: 1 });
+
+            // Fetch questions with all types
+            const questions = await question.findById(req.body.id);
+            
+            if (!questions) {
+                console.log("No questions found for ID:", req.body.id);
+                return response.status(404).send('Questions not found');
+            }
+
+            // Validate question counts
+            const validation = validateQuestions(questions);
+            if (!validation.isValid) {
+                return response.status(403).json({
+                    error: "Insufficient questions",
+                    details: validation.message
+                });
+            }
+
             let data = {
                 image: "http://localhost:4200/demo.png",
                 code: req.body.value,
@@ -49,152 +68,261 @@ mid1Router.route('/')
                 date: req.body.date,
                 month: req.body.month,
                 Year: req.body.year,
-                questions: []
+                questions: {
+                    mcq: [],
+                    descriptive: []
+                }
             };
 
-            var units = ['u1', 'u2', 'u3'];
-            const ints = random.uniformInt(0, 2);
+            // Select questions for each category
+            try {
+                // Select MCQs (15 questions, 1 mark each)
+                data.questions.mcq = selectMCQs(questions.mcq, markDistribution.mcq.count);
 
-            if (questions.easy[units[0]].length < 5 ||
-                questions.easy[units[0]].length < 5 ||
-                questions.easy[units[2]].length < 5 ||
-                questions.medium[units[0]].length < 3 ||
-                questions.medium[units[1]].length < 3 ||
-                questions.medium[units[2]].length < 3) {
+                // Select Easy questions (6 questions, 5 marks each)
+                const easyQuestions = selectQuestions(questions.easy, markDistribution.easy.count);
+                
+                // Select Medium questions (3 questions, 7 marks each)
+                const mediumQuestions = selectQuestions(questions.medium, markDistribution.medium.count);
+                
+                // Select Hard question (1 question, 9 marks)
+                const hardQuestions = selectQuestions(questions.hard, markDistribution.hard.count);
 
-                response.statusCode = 403;
-                response.send("Couldn't generate Paper for less number of questions.");
-            }
-            else {
-                var a = ints(), b = ints();
-                while (a === b) {
-                    b = ints();
-                }
-                units.forEach((value, index) => {
-                    if (index == 2) {
-                        if (a == index || b == index) {
-                            var eas = random.uniformInt(1, questions.easy[value].length - 1);
-                            var x1 = eas();
-                            var x2 = eas();
-                            while (x1 === x2) {
-                                x2 = eas();
+                // Combine descriptive questions
+                data.questions.descriptive = [
+                    ...formatQuestions(easyQuestions, markDistribution.easy.marks),
+                    ...formatQuestions(mediumQuestions, markDistribution.medium.marks),
+                    ...formatQuestions(hardQuestions, markDistribution.hard.marks)
+                ];
+
+                // Generate PDF
+                const templateHtml = await getTemplateHtml();
+                
+                hb.registerHelper('img', function (data) {
+                    return new hb.SafeString(
+                        `<img src="${data}" width="100px" height="90px" style="margin-left: 4em;" />`
+                    );
+                });
+
+                hb.registerHelper('question', function (data) {
+                    let str = '';
+                    let questionNumber = 1;
+
+                    // Style for spacing
+                    str += `
+                        <style>
+                            .question-container {
+                                margin-bottom: 10px;
                             }
-                            data.questions.push([
-                                questions.easy[value][x1].name,
-                                questions.easy[value][x2].name
-                            ])
-                        } else {
-                            var med = random.uniformInt(1, questions.medium[value].length - 1);
-                            var p = med();
-                            data.questions.push(questions.medium[value][p].name);
-                        }
-                    }
-                    else if (a === index || b === index) {
-                        var ser = new Set();
-                        var serrand = random.uniformInt(0, questions.easy[value].length - 1);
-                        while (ser.size < 4) {
-                            ser.add(serrand());
-                        }
-                        var iterator = ser.keys();
-                        data.questions.push([
-                            questions.easy[value][iterator.next().value].name,
-                            questions.easy[value][iterator.next().value].name
-                        ])
-                        data.questions.push([
-                            questions.easy[value][iterator.next().value].name,
-                            questions.easy[value][iterator.next().value].name
-                        ])
-                    } else {
-                        var med = random.uniformInt(1, questions.medium[value].length - 1);
-                        var p = med();
-                        var q = med();
-                        while (p === q) {
-                            q = med();
-                        }
-                        data.questions.push(questions.medium[value][p].name);
-                        data.questions.push(questions.medium[value][q].name);
-                    }
-                })
-                //console.log(data.questions);
-                getTemplateHtml().then(async (res) => {
-
-                    hb.registerHelper('img', function (data) {
-
-                        var str = '<img src = ' + '"' + data + '" ' + ' width="100px" height="90px" style="margin-left: 4em;" /> '
-                        console.log(str);
-                        return new hb.SafeString(str);
-                    })
-                    hb.registerHelper('question', function (data) {
-                        var str = '';
-                        var questionNumber = 1;
-                        
-                        for (var i = 0; i < data.length; i++) {
-                            if (typeof (data[i]) === 'object') {
-                                str += '<tr>'
-                                str += '<td class="quetable cen">' + questionNumber + '.' + '</td>';
-                                str += '<td class="quetable tdcenter">' + data[i][0] + '</td>';
-                                str += '<td class="quetable cen">' + 2 + '</td>';
-                                str += '</tr>'
-                                questionNumber++;
-                                
-                                str += '<tr>'
-                                str += '<td class="quetable cen">' + questionNumber + '.' + '</td>';
-                                str += '<td class="quetable tdcenter">' + data[i][1] + '</td>';
-                                str += '<td class="quetable cen">' + 3 + '</td>';
-                                str += '</tr>'
-                                questionNumber++;
-                            } else {
-                                str += '<tr>'
-                                str += '<td class="quetable cen">' + questionNumber + '.' + '</td>';
-                                str += '<td class="quetable tdcenter">' + data[i] + '</td>';
-                                str += '<td class="quetable cen">' + 5 + '</td>';
-                                str += '</tr>'
-                                questionNumber++;
+                            .question {
+                                font-size: 12pt;
+                                margin-bottom: 5px;
                             }
-                        }
-                        return new hb.SafeString(str);
-                    });
-                    console.log("Compiling the template with handlebars")
-                    const template = hb.compile(res, { strict: true });
-                    const result = template(data);
-                    const html = result;
-                    const browser = await puppeteer.launch({
-                    executablePath:'/opt/homebrew/bin/chromium',
-                        args: [
-                            '--no-sandbox',
-                            '--disable-setuid-sandbox',
-                        ],
-                    });
-                    const page = await browser.newPage()
-                    await page.setContent(html)
-                    await page.pdf({
-                        path: __dirname + '/demo.pdf',
-                        preferCSSPageSize: true,
-                        format: 'A4',
-                        landscape: true,
-                        margin: {
-                            top: '50px',
-                            left: '20px',
-                            right: '20px'
-                        }
-                    })
-                    await browser.close();
-                    console.log("PDF Generated");
-                    response.statusCode = 200;
-                    response.setHeader('Content-Type', 'application/pdf');
-                    response.sendFile(__dirname + '/demo.pdf');
-                }).catch(err => {
-                    console.error(err)
+                            .options {
+                                margin-left: 20px;
+                                margin-bottom: 5px;
+                            }
+                            .option {
+                                margin-bottom: 8px;
+                            }
+                            .answer-space {
+                                width: 100%;
+                                border-bottom: 1px dotted #ccc;
+                                margin-bottom: 10px;
+                            }
+                            .answer-space.easy {
+                                height: 200px;  /* Approximately 8-15 lines */
+                            }
+                            .answer-space.medium {
+                                height: 350px;  /* Approximately 15-25 lines */
+                            }
+                            .answer-space.hard {
+                                height: 750px;  /* Approximately one page */
+                            }
+                            .marks {
+                                float: right;
+                                font-weight: normal;
+                            }
+                        </style>
+                    `;
+
+                    // First render MCQs (without any section header)
+                    if (data.mcq && data.mcq.length > 0) {
+                        data.mcq.forEach((q) => {
+                            str += `
+                                <div class="question-container">
+                                    <div class="question">
+                                        ${questionNumber}. ${q.name} <span class="marks">[1]</span>
+                                    </div>
+                                    <div class="options">
+                                        ${q.options.map((opt, i) => 
+                                            `<div class="option">${['a', 'b', 'c', 'd'][i]}) ${opt}</div>`
+                                        ).join('')}
+                                    </div>
+                                </div>
+                            `;
+                            questionNumber++;
+                        });
+                    }
+
+                    // Then render descriptive questions with appropriate spacing
+                    if (data.descriptive && data.descriptive.length > 0) {
+                        data.descriptive.forEach((q) => {
+                            let spaceClass = '';
+                            if (q.marks === 5) spaceClass = 'easy';
+                            else if (q.marks === 7) spaceClass = 'medium';
+                            else if (q.marks === 9) spaceClass = 'hard';
+
+                            str += `
+                                <div class="question-container">
+                                    <div class="question">
+                                        ${questionNumber}. ${q.name} <span class="marks">[${q.marks}]</span>
+                                    </div>
+                                    <div class="answer-space ${spaceClass}"></div>
+                                </div>
+                            `;
+                            questionNumber++;
+                        });
+                    }
+
+                    return new hb.SafeString(str);
+                });
+
+                const template = hb.compile(templateHtml, { strict: true });
+                const html = template(data);
+
+                const browser = await puppeteer.launch({
+                    executablePath: '/opt/homebrew/bin/chromium',
+                    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+                });
+
+                const page = await browser.newPage();
+                await page.setContent(html);
+                await page.pdf({
+                    path: __dirname + '/demo.pdf',
+                    format: 'A4',
+                    landscape: false,
+                    margin: {
+                        top: '30px',
+                        bottom: '30px',
+                        left: '30px',
+                        right: '30px'
+                    },
+                    printBackground: true
+                });
+
+                await browser.close();
+                console.log("PDF Generated Successfully");
+                
+                response.statusCode = 200;
+                response.setHeader('Content-Type', 'application/pdf');
+                response.sendFile(__dirname + '/demo.pdf');
+
+            } catch (err) {
+                console.error("Error generating paper:", err);
+                return response.status(500).json({
+                    error: "Error generating paper",
+                    details: err.message
                 });
             }
+
+        } catch (err) {
+            console.error("General error:", err);
+            return response.status(500).json({
+                error: "Internal server error",
+                details: err.message
+            });
         }
-        generatePdf();
     })
     .put((req, res, next) => {
         res.end('PUT Operation is not Performed');
     })
     .delete((req, res, next) => {
         res.end('DELETE Operation is not Performed');
-    })
+    });
+
+// Helper Functions
+function validateQuestions(questions) {
+    const requirements = {
+        mcq: { min: 20, name: "MCQ" },
+        easy: { min: 8, name: "Easy" },
+        medium: { min: 5, name: "Medium" },
+        hard: { min: 2, name: "Hard" }
+    };
+
+    for (const [type, req] of Object.entries(requirements)) {
+        const count = countQuestionsInUnits(questions[type]);
+        if (count < req.min) {
+            return {
+                isValid: false,
+                message: `Insufficient ${req.name} questions. Need at least ${req.min}, found ${count}`
+            };
+        }
+    }
+    return { isValid: true };
+}
+
+function countQuestionsInUnits(questionType) {
+    if (!questionType) return 0;
+    return ['u1', 'u2', 'u3'].reduce((total, unit) => {
+        return total + (questionType[unit]?.length || 0);
+    }, 0);
+}
+
+function selectMCQs(mcqPool, count) {
+    const allMCQs = [];
+    ['u1', 'u2', 'u3'].forEach(unit => {
+        if (mcqPool?.[unit]) {
+            allMCQs.push(...mcqPool[unit]);
+        }
+    });
+
+    // Randomly select MCQs
+    const selected = new Set();
+    while (selected.size < count && selected.size < allMCQs.length) {
+        const index = Math.floor(Math.random() * allMCQs.length);
+        if (!selected.has(index)) {
+            selected.add(index);
+        }
+    }
+
+    return Array.from(selected).map(index => allMCQs[index]);
+}
+
+function selectQuestions(questionPool, count) {
+    const allQuestions = [];
+    ['u1', 'u2', 'u3'].forEach(unit => {
+        if (questionPool?.[unit]) {
+            allQuestions.push(...questionPool[unit]);
+        }
+    });
+
+    // Randomly select questions
+    const selected = new Set();
+    while (selected.size < count && selected.size < allQuestions.length) {
+        const index = Math.floor(Math.random() * allQuestions.length);
+        if (!selected.has(index)) {
+            selected.add(index);
+        }
+    }
+
+    return Array.from(selected).map(index => allQuestions[index]);
+}
+
+function formatQuestions(questions, marks) {
+    return questions.map(q => ({
+        name: q.name,
+        marks: marks
+    }));
+}
+
+async function getTemplateHtml() {
+    try {
+        const invoicePath = path.resolve("routes/teachers/paperGenerator/getmid1/demo.html");
+        return await readFile(invoicePath, 'utf8');
+    } catch (err) {
+        throw new Error("Could not load html template: " + err.message);
+    }
+}
 
 module.exports = mid1Router;
