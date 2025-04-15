@@ -42,7 +42,7 @@ mid1Router.route('/')
                 year: req.body.deptYear,
                 sem: req.body.deptSem,
                 subjectname: req.body.label,
-                marks: '15',
+                marks: '75',
                 branch: 'CSE',
                 starttime: req.body.start,
                 endtime: req.body.end,
@@ -126,26 +126,31 @@ mid1Router.route('/')
                     })
                     hb.registerHelper('question', function (data) {
                         var str = '';
+                        var questionNumber = 1;
+                        
                         for (var i = 0; i < data.length; i++) {
                             if (typeof (data[i]) === 'object') {
-                                str + '<tr>'
-                                str += '<td class="quetable cen">' + (i + 1) + String.fromCharCode(97) + ').' + '</td>';
+                                str += '<tr>'
+                                str += '<td class="quetable cen">' + questionNumber + '.' + '</td>';
                                 str += '<td class="quetable tdcenter">' + data[i][0] + '</td>';
                                 str += '<td class="quetable cen">' + 2 + '</td>';
                                 str += '</tr>'
+                                questionNumber++;
+                                
                                 str += '<tr>'
-                                str += '<td class="quetable cen">' + (i + 1) + String.fromCharCode(98) + ').' + '</td>';
+                                str += '<td class="quetable cen">' + questionNumber + '.' + '</td>';
                                 str += '<td class="quetable tdcenter">' + data[i][1] + '</td>';
                                 str += '<td class="quetable cen">' + 3 + '</td>';
                                 str += '</tr>'
+                                questionNumber++;
                             } else {
                                 str += '<tr>'
-                                str += '<td class="quetable cen">' + (i + 1) + ').' + '</td>';
+                                str += '<td class="quetable cen">' + questionNumber + '.' + '</td>';
                                 str += '<td class="quetable tdcenter">' + data[i] + '</td>';
                                 str += '<td class="quetable cen">' + 5 + '</td>';
                                 str += '</tr>'
+                                questionNumber++;
                             }
-                            str += '</tr>';
                         }
                         return new hb.SafeString(str);
                     });

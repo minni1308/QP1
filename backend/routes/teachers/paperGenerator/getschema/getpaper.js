@@ -194,6 +194,7 @@ schemaRouter.route('/')
                 const result = template(data);
                 const html = result;
                 const browser = await puppeteer.launch({
+                  executablePath:'/opt/homebrew/bin/chromium',
                     args: [
                         '--no-sandbox',
                         '--disable-setuid-sandbox',

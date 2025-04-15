@@ -4,152 +4,124 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>First MID Question Paper</title>
+    <title>{{subjectname}} - Question Paper</title>
     <style>
       body {
-        font-family: Arial, sans-serif;
-        margin: 0;
+        font-family: 'Times New Roman', Times, serif;
+        margin: 40px;
         padding: 0;
+        font-size: 12pt;
       }
 
       .main {
-        padding: 20px;
+        padding: 0;
         width: 100%;
+        max-width: 8.5in;
+        margin: auto;
       }
 
-      .sec1 {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 2em;
-        margin-bottom: 10px;
-      }
-
-      .heading {
-        text-align: center;
-        font-size: 1.6em;
-        font-weight: bold;
-        line-height: 1.5;
-      }
-
-      .exam-title {
-        text-align: center;
-        font-size: 1.6em;
-        font-weight: 800;
-        margin: 20px 0;
-      }
-
-      .details {
-        display: flex;
-        justify-content: space-around;
-        margin-bottom: 20px;
-      }
-
-      .details table td {
-        font-size: 1.4em;
-        padding: 4px 8px;
-      }
-
-      .details table td:first-child {
-        font-weight: bold;
-      }
-
-      .instruction {
-        text-align: center;
-        font-weight: bold;
-        font-size: 1.5em;
+      .paper-header {
         margin-bottom: 15px;
       }
 
+      .exam-main-title {
+        text-align: left;
+        font-size: 1.1em;
+        font-weight: normal;
+        margin-bottom: 25px;
+      }
+
+      .name-code-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 5px;
+        padding-bottom: 5px;
+        font-size: 1.1em;
+        border-bottom: 1px solid black;
+      }
+
+      .name-label {
+        width: 50%;
+      }
+
+      .course-code-header {
+        font-weight: bold;
+        text-align: right;
+        margin-right: 10%;
+      }
+
+      .instructions-paragraph {
+        font-size: 1em;
+        text-align: left;
+        margin-top: 10px;
+        margin-bottom: 25px;
+        line-height: 1.4;
+      }
+
       .quetable {
-        width: 85%;
+        width: 100%;
         margin: auto;
         border-collapse: collapse;
-        font-size: 1.3em;
+        font-size: 1em;
+        border: none;
       }
 
       .quetable th,
       .quetable td {
-        border: 1px solid black;
-        padding: 8px;
+        border: none;
+        padding: 5px 0;
         vertical-align: top;
+        text-align: left;
       }
 
-      .tdcenter {
-        word-wrap: break-word;
-        font-size: 1.5em;
+      .quetable tbody tr {
+        display: block;
+        margin-bottom: 300px;
       }
 
-      .cen {
-        text-align: center;
-        font-size: 1.4em;
+      .quetable tbody tr:nth-child(3n) {
+        margin-bottom: 400px;
+      }
+
+      .quetable th {
+        display: none;
+      }
+
+      .quetable td:first-child {
+        padding-right: 5px;
+        width: 30px;
+      }
+
+      .quetable td:last-child {
+        text-align: right;
+        font-weight: bold;
+        white-space: nowrap;
+        padding-left: 15px;
       }
     </style>
   </head>
   <body>
     <div class="main">
-      <section class="sec1">
-        {{img image}}
-        <div class="heading">
-          B V Raju Institute of Technology<br />
-          (UGC Autonomous)<br />
-          Vishnupur, Narsapur, Medak
-        </div>
-      </section>
-
-      <section class="exam-title">
-        B.Tech {{sem}} Semester First MID - {{month}} {{Year}}
-      </section>
-
-      <section class="details">
-        <div class="part1">
-          <table>
-            <tr>
-              <td>Year</td>
-              <td>: {{year}}</td>
-            </tr>
-            <tr>
-              <td>Subject</td>
-              <td>: {{subjectname}}</td>
-            </tr>
-            <tr>
-              <td>Time</td>
-              <td>: {{starttime}} to {{endtime}}</td>
-            </tr>
-          </table>
+      <div class="paper-header">
+        <div class="exam-main-title">
+          {{subjectname}} - First MID - {{month}} {{Year}}
         </div>
 
-        <div class="part2">
-          <table>
-            <tr>
-              <td>Branch</td>
-              <td>: {{branch}}</td>
-            </tr>
-            <tr>
-              <td>Date</td>
-              <td>: {{date}}</td>
-            </tr>
-            <tr>
-              <td>Marks</td>
-              <td>: {{marks}}</td>
-            </tr>
-          </table>
+        <div class="name-code-line">
+          <span class="name-label">Name: </span>
+          <span class="course-code-header">{{branch}}</span>
         </div>
-      </section>
+
+        <p class="instructions-paragraph">
+          When answering the questions below, make sure to show all of your work. Pay attention to the point values on each question. State your assumptions, and explain your answers thoroughly. Remember that an explanation is expected with every answer except the multiple choice and true/false questions when the answer is true. Use blank paper if you do not have enough room.
+          <br>
+          Time: {{starttime}} to {{endtime}} | Total Marks: {{marks}}
+        </p>
+      </div>
 
       <section>
-        <div class="instruction">
-          Answer any three Questions. All Questions carry equal marks.
-        </div>
-
         <table class="quetable">
-          <thead>
-            <tr>
-              <th>Q.No</th>
-              <th>Question Description</th>
-              <th>Marks</th>
-            </tr>
-          </thead>
           <tbody>
             {{question questions}}
           </tbody>

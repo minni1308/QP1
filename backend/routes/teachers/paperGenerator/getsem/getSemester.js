@@ -15,7 +15,6 @@ const hb = require('handlebars');
 const readFile = utils.promisify(fs.readFile);
 
 random.use(seedrandom('qpgenerator'));
-
 semRouter.use(express.json());
 semRouter.route('/')
     .options(cors.corsWithOptions, (req, resp) => { resp.sendStatus(200); })
@@ -165,6 +164,7 @@ semRouter.route('/')
                     const result = template(data);
                     const html = result;
                     const browser = await puppeteer.launch({
+                        executablePath:'/opt/homebrew/bin/chromium',
                         args: [
                             '--no-sandbox',
                             '--disable-setuid-sandbox',
