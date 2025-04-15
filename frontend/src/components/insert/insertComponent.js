@@ -121,43 +121,94 @@ const Insert = ({
         </Col>
       </Row>
 
-      {formd.values.map((el, i) => (
-        <div key={i} className="mb-3">
-          <InputGroup>
-            <InputGroupAddon addonType="prepend">
-              <InputGroupText style={{
-                backgroundColor: "#f8f9fa",
-                border: "1px solid #ccc",
-                borderRadius: "6px 0 0 6px"
-              }}>{i + 1}</InputGroupText>
-            </InputGroupAddon>
-            <Input
-              placeholder="Enter the Question"
-              value={el.value || ""}
-              required
-              onChange={(e) => handleInput(index, i, e)}
-              style={{
-                borderRadius: "0 6px 6px 0",
-                border: "1px solid #ccc",
-                padding: "12px",
-                fontSize: "1rem"
-              }}
-            />
-            <InputGroupAddon addonType="append">
-              <Button 
-                onClick={() => removeClick(index, i)}
-                color="danger"
+      {/* Conditionally render input based on type */}
+      {formd.marks === 'mcq' ? (
+        // MCQ Input Fields
+        formd.values.map((el, i) => (
+          <div key={i} className="mcq-input-group mb-4 p-3 border rounded">
+            <Row>
+              <Col md={12}>
+                <Label>Question {i + 1}</Label>
+                <Input
+                  type="textarea"
+                  placeholder="Enter MCQ question text"
+                  value={el.value || ""}
+                  required
+                  onChange={(e) => handleInput(index, i, e, 'value')} // Specify field type
+                  className="mb-2"
+                  rows={2}
+                />
+              </Col>
+            </Row>
+            <Row>
+              {['A', 'B', 'C', 'D'].map((optLetter, optIndex) => (
+                <Col md={6} key={optLetter}>
+                  <FormGroup>
+                    <Label>Option {optLetter}</Label>
+                    <Input
+                      type="text"
+                      placeholder={`Option ${optLetter}`}
+                      value={el.options ? el.options[optIndex] : ''}
+                      required
+                      onChange={(e) => handleInput(index, i, e, 'option', optIndex)} // Specify field type and option index
+                    />
+                  </FormGroup>
+                </Col>
+              ))}
+            </Row>
+            <Row>
+              <Col md={12} className="d-flex align-items-end justify-content-end">
+                <Button 
+                    onClick={() => removeClick(index, i)}
+                    color="danger"
+                    size="sm"
+                  >
+                    Remove MCQ
+                </Button>
+              </Col>
+            </Row>
+          </div>
+        ))
+      ) : (
+        // Descriptive Input Fields (Existing Logic)
+        formd.values.map((el, i) => (
+          <div key={i} className="mb-3">
+            <InputGroup>
+              <InputGroupAddon addonType="prepend">
+                <InputGroupText style={{
+                  backgroundColor: "#f8f9fa",
+                  border: "1px solid #ccc",
+                  borderRadius: "6px 0 0 6px"
+                }}>{i + 1}</InputGroupText>
+              </InputGroupAddon>
+              <Input
+                placeholder="Enter the Question"
+                value={el.value || ""}
+                required
+                onChange={(e) => handleInput(index, i, e, 'value')} // Specify field type
                 style={{
-                  borderRadius: "6px",
-                  marginLeft: "10px"
+                  borderRadius: "0 6px 6px 0",
+                  border: "1px solid #ccc",
+                  padding: "12px",
+                  fontSize: "1rem"
                 }}
-              >
-                <i className="fas fa-times"></i>
-              </Button>
-            </InputGroupAddon>
-          </InputGroup>
-        </div>
-      ))}
+              />
+              <InputGroupAddon addonType="append">
+                <Button 
+                  onClick={() => removeClick(index, i)}
+                  color="danger"
+                  style={{
+                    borderRadius: "6px",
+                    marginLeft: "10px"
+                  }}
+                >
+                  <i className="fas fa-times"></i>
+                </Button>
+              </InputGroupAddon>
+            </InputGroup>
+          </div>
+        ))
+      )}
 
       <Row className="mt-4 mb-3">
         <Col sm={12} md={8}>
@@ -172,7 +223,8 @@ const Insert = ({
                   width: "100%"
                 }}
               >
-                Add Question
+                {/* Change button text based on type? */}
+                Add {formd.marks === 'mcq' ? 'MCQ' : 'Question'} 
               </Button>
             </Col>
             <Col>

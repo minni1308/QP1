@@ -28,7 +28,12 @@ const Alpha = () => {
       dummySubject: "",
       unit: "",
       marks: "",
-      values: [{ value: null }],
+      values: [
+        { 
+          value: null,
+          options: ['', '', '', ''],
+        }
+      ],
     },
   ]);
 
@@ -98,24 +103,35 @@ const Alpha = () => {
         dummySubject: "",
         unit: "",
         marks: "",
-        values: [{ value: null }],
+        values: [
+          { 
+            value: null,
+            options: ['', '', '', ''],
+          }
+        ],
       },
     ]);
   };
 
   const addFormClick = (ind) => {
     const updated = [...ques];
-    updated[ind].values.push({ value: null });
+    updated[ind].values.push({ 
+      value: null,
+      options: ['', '', '', ''],
+    });
     setQues(updated);
   };
 
   const formClearAll = (ind) => {
     const updated = [...ques];
-    updated[ind].values = [{ value: null }];
+    updated[ind].values = [{
+      value: null,
+      options: ['', '', '', ''],
+    }];
     setQues(updated);
   };
 
-  const handleInput = (ind, i, e) => {
+  const handleInput = (ind, i, e, fieldType, optionIndex = null) => {
     const updated = [...ques];
     if (i === -2) {
       updated[ind].dummySubject = e;
@@ -124,7 +140,12 @@ const Alpha = () => {
     } else if (i === -1) {
       updated[ind] = { ...updated[ind], [e.target.name]: e.target.value };
     } else {
-      updated[ind].values[i].value = e.target.value.trimLeft();
+      const currentQuestion = updated[ind].values[i];
+      if (fieldType === 'value') {
+        currentQuestion.value = e.target.value.trimLeft();
+      } else if (fieldType === 'option' && optionIndex !== null) {
+        currentQuestion.options[optionIndex] = e.target.value;
+      }
     }
     setQues(updated);
   };
@@ -153,7 +174,12 @@ const Alpha = () => {
         unit: "",
         marks: "",
         dummySubject: "",
-        values: [{ value: null }],
+        values: [
+          { 
+            value: null,
+            options: ['', '', '', ''],
+          }
+        ],
       },
     ]);
     setTRemoveAll(!tRemoveAll);
@@ -165,7 +191,25 @@ const Alpha = () => {
   const handleSubmit2 = (e) => {
     e.preventDefault();
     const grouped = {};
+    let validationError = false;
+
     ques.forEach((q) => {
+      if (!q.code.id) {
+        alert('Please select a subject for all sections.');
+        validationError = true;
+        return;
+      }
+      if (!q.unit) {
+        alert('Please select a unit for all sections.');
+        validationError = true;
+        return;
+      }
+      if (!q.marks) {
+        alert('Please select a Type/Marks for all sections.');
+        validationError = true;
+        return;
+      }
+
       if (!grouped[q.code.id]) {
         grouped[q.code.id] = {
           easy: { u1: [], u2: [], u3: [], u4: [], u5: [] },
@@ -186,24 +230,44 @@ const Alpha = () => {
         level = "hard";
       } else {
         console.warn(`Invalid type/marks value: ${q.marks} for subject ${q.code.value}`);
-        return;
+        return; // Skip this entry
       }
 
       const unitKey = `u${q.unit}`;
       if (!grouped[q.code.id][level][unitKey]) {
         console.warn(`Invalid unit key: ${unitKey} for level ${level}`);
-        return;
+        return; // Skip if unit key is invalid
       }
       
-      q.values.forEach((val) => {
-        if (val.value && val.value.trim()) {
-          grouped[q.code.id][level][unitKey].push({
-            name: val.value.trim(),
-            teacher: localStorage.get("user").id,
-          });
+      q.values.forEach((val, valueIndex) => {
+        if (!val.value || !val.value.trim()) {
+          alert(`Please enter question text for all questions (Section for ${q.code.value}, Question ${valueIndex + 1}).`);
+          validationError = true;
+          return;
         }
+
+        const questionData = {
+          name: val.value.trim(),
+          teacher: localStorage.get("user").id,
+        };
+
+        // Add MCQ specific fields if the level is mcq
+        if (level === 'mcq') {
+          if (!Array.isArray(val.options) || val.options.length !== 4 || val.options.some(opt => !opt || !opt.trim())) {
+             alert(`Please enter all 4 options for MCQ (Section for ${q.code.value}, Question ${valueIndex + 1}).`);
+             validationError = true;
+             return;
+          }
+          questionData.options = val.options.map(opt => opt.trim());
+        }
+
+        grouped[q.code.id][level][unitKey].push(questionData);
       });
     });
+
+    if (validationError) {
+      return; // Stop submission if validation failed
+    }
 
     setIsloading(true);
     postQuestion(grouped)
@@ -217,19 +281,21 @@ const Alpha = () => {
               unit: "",
               marks: "",
               dummySubject: "",
-              values: [{ value: null }],
+              values: [{ value: null, options: ['', '', '', ''] }],
             },
           ]);
           setIsloading(false);
         } else {
-          throw new Error();
+          throw new Error(res.message || 'Submission Failed'); // Use server message if available
         }
       })
-      .catch(() => {
+      .catch((err) => {
         setIsloading(false);
-        alert("Cannot Connect to Server!!!, Logging Out...");
-        localStorage.clear();
-        window.location.reload();
+        console.error("Submission error:", err);
+        alert(`Submission Failed: ${err.message || 'Cannot Connect to Server!!!'}` );
+        // Optional: Don't log out automatically on submit failure
+        // localStorage.clear();
+        // window.location.reload();
       });
   };
 

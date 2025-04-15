@@ -19,7 +19,15 @@ const mergeQuestions = (target, source) => {
       if (!target[diff][unit]) target[diff][unit] = [];
 
       if (source[diff][unit]?.length) {
-        target[diff][unit].push(...source[diff][unit]);
+        if (diff !== 'mcq') {
+           target[diff][unit].push(...source[diff][unit].map(q => ({ name: q.name, teacher: q.teacher })));
+        } else {
+           target[diff][unit].push(...source[diff][unit].map(q => ({
+             name: q.name,
+             options: q.options,
+             teacher: q.teacher
+           })));
+        }
       }
     }
   }
@@ -61,18 +69,29 @@ questionRouter
       for (const subjectId of Object.keys(req.body)) {
         const payload = req.body[subjectId];
         let existing = await question.findOne({ subject: subjectId });
+        
+        // Basic validation for MCQ payload
+        if (payload.mcq) {
+          for (const unit of ["u1", "u2", "u3", "u4", "u5"]) {
+            if (payload.mcq[unit]) {
+              payload.mcq[unit] = payload.mcq[unit].filter(q => 
+                q && q.name && Array.isArray(q.options) && q.options.length === 4
+              );
+            }
+          }
+        }
 
         if (!existing) {
           // Create new question document
-          await question.create({
+          const newQuestionData = {
             subject: subjectId,
             easy: payload.easy || { u1: [], u2: [], u3: [], u4: [], u5: [] },
             medium: payload.medium || { u1: [], u2: [], u3: [], u4: [], u5: [] },
             hard: payload.hard || { u1: [], u2: [], u3: [], u4: [], u5: [] },
             mcq: payload.mcq || { u1: [], u2: [], u3: [], u4: [], u5: [] }
-          });
+          };
+          await question.create(newQuestionData);
         } else {
-          // Merge into existing document
           mergeQuestions(existing, payload);
           await existing.save();
         }
@@ -81,6 +100,9 @@ questionRouter
       res.status(200).json({ success: true });
     } catch (err) {
       console.error("Insert question error:", err);
+      if (err.name === 'ValidationError') {
+        return res.status(400).json({ success: false, message: err.message });
+      }
       next(err);
     }
   })

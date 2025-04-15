@@ -225,67 +225,37 @@ var questionSchema = new Schema({
     mcq: {
         u1: [
             {
-                name: {
-                    type: String,
-                    required: true,
-                },
-                teacher: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    ref: 'teacher',
-                    required: true,
-                }
+                name: { type: String, required: true },
+                options: [{ type: String, required: true }],
+                teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'teacher', required: true }
             }
         ],
         u2: [
             {
-                name: {
-                    type: String,
-                    required: true,
-                },
-                teacher: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    ref: 'teacher',
-                    required: true,
-                }
+                name: { type: String, required: true },
+                options: [{ type: String, required: true }],
+                teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'teacher', required: true }
             }
         ],
         u3: [
             {
-                name: {
-                    type: String,
-                    required: true,
-                },
-                teacher: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    ref: 'teacher',
-                    required: true,
-                }
+                name: { type: String, required: true },
+                options: [{ type: String, required: true }],
+                teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'teacher', required: true }
             }
         ],
         u4: [
             {
-                name: {
-                    type: String,
-                    required: true,
-                },
-                teacher: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    ref: 'teacher',
-                    required: true,
-                }
+                name: { type: String, required: true },
+                options: [{ type: String, required: true }],
+                teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'teacher', required: true }
             }
         ],
         u5: [
             {
-                name: {
-                    type: String,
-                    required: true,
-                },
-                teacher: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    ref: 'teacher',
-                    required: true,
-                }
+                name: { type: String, required: true },
+                options: [{ type: String, required: true }],
+                teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'teacher', required: true }
             }
         ],
     },
