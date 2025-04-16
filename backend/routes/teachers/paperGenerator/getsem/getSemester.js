@@ -2,204 +2,323 @@ var express = require('express');
 var semRouter = express.Router();
 var authenticate = require('../../../../authenticate');
 var cors = require('../../../cors');
-var random = require('random');
-var seedrandom = require('seedrandom');
-
 var question = require('../../../../models/questions');
 
 const fs = require('fs')
 const path = require('path')
 const utils = require('util')
 const puppeteer = require('puppeteer')
-const hb = require('handlebars');
+const hb = require('handlebars')
 const readFile = utils.promisify(fs.readFile);
 
+const random = require('random');
+var seedrandom = require('seedrandom');
 random.use(seedrandom('qpgenerator'));
+
+// Define mark distribution (Total 100 marks)
+const markDistribution = {
+    mcq: { count: 20, marks: 1 },     // 20 × 1 = 20 marks
+    easy: { count: 8, marks: 5 },      // 8 × 5 = 40 marks
+    medium: { count: 4, marks: 7 },    // 4 × 7 = 28 marks
+    hard: { count: 2, marks: 6 }       // 2 × 6 = 12 marks
+};                                     // Total = 100 marks
+
+const units = ['u1', 'u2', 'u3', 'u4', 'u5']; // All units for semester exam
+
 semRouter.use(express.json());
+
 semRouter.route('/')
     .options(cors.corsWithOptions, (req, resp) => { resp.sendStatus(200); })
     .get((req, res, next) => {
         res.end('GET Operation is not Performed');
     })
-    .post(cors.corsWithOptions, authenticate.verifyUser, (req, response, next) => {
-        async function getTemplateHtml() {
-            console.log("Loading template file in memory")
-            try {
-                const invoicePath = path.resolve(__dirname + "/demo.html");
-                console.log(invoicePath);
-                return await readFile(invoicePath, 'utf8');
-            } catch (err) {
-                return Promise.reject("Could not load html template");
-            }
-        }
-        async function generatePdf() {
+    .post(cors.corsWithOptions, authenticate.verifyUser, async (req, response, next) => {
+        try {
+            console.log("Received request for paper generation");
+            console.log("Subject ID:", req.body.id);
+
             const questions = await question.findById(req.body.id);
+            if (!questions) {
+                console.log("No questions found for ID:", req.body.id);
+                return response.status(404).send('Questions not found');
+            }
+
+            // Log the structure of the questions document
+            console.log("\nQuestion document structure:");
+            ['mcq', 'easy', 'medium', 'hard'].forEach(type => {
+                console.log(`\n${type.toUpperCase()} questions:`);
+                units.forEach(unit => {
+                    console.log(`  ${unit}: ${questions[type]?.[unit]?.length || 0} questions`);
+                });
+            });
+
+            // Validate questions with detailed logging
+            const validation = validateQuestions(questions);
+            if (!validation.isValid) {
+                console.log("Validation failed:", validation.message);
+                return response.status(403).json({
+                    error: "Insufficient questions",
+                    details: validation.message,
+                    questionCounts: {
+                        mcq: units.reduce((sum, unit) => sum + (questions.mcq?.[unit]?.length || 0), 0),
+                        easy: units.reduce((sum, unit) => sum + (questions.easy?.[unit]?.length || 0), 0),
+                        medium: units.reduce((sum, unit) => sum + (questions.medium?.[unit]?.length || 0), 0),
+                        hard: units.reduce((sum, unit) => sum + (questions.hard?.[unit]?.length || 0), 0)
+                    }
+                });
+            }
+
             let data = {
+                image: "http://localhost:4200/demo.png",
                 code: req.body.value,
-                regulation: "R15",
-                Year: req.body.deptYear,
+                year: req.body.deptYear,
                 sem: req.body.deptSem,
                 subjectname: req.body.label,
-                subjecttype: 'ACADEMIC',
-                time: '3',
-                marks: '70',
-                year: req.body.year,
+                marks: '100',
+                branch: 'CSE',
+                starttime: req.body.start,
+                endtime: req.body.end,
+                date: req.body.date,
                 month: req.body.month,
-                squestion: [],
-                lquestion: []
+                Year: req.body.year,
+                questions: []
             };
 
-            var units = ['u1', 'u2', 'u3', 'u4', 'u5']
-            if (questions.easy[units[0]].length < 3 ||
-                questions.easy[units[1]].length < 3 ||
-                questions.easy[units[2]].length < 3 ||
-                questions.easy[units[3]].length < 3 ||
-                questions.easy[units[4]].length < 3 ||
-                questions.medium[units[0]].length < 5 ||
-                questions.medium[units[1]].length < 5 ||
-                questions.medium[units[2]].length < 5 ||
-                questions.medium[units[3]].length < 5 ||
-                questions.medium[units[4]].length < 5 ||
-                questions.hard[units[0]].length < 3 ||
-                questions.hard[units[1]].length < 3 ||
-                questions.hard[units[2]].length < 3 ||
-                questions.hard[units[3]].length < 3 ||
-                questions.hard[units[4]].length < 3) {
+            try {
+                // Select questions from all units with balanced distribution
+                const selectedQuestions = selectQuestionsFromUnits(questions, units);
+                data.questions = formatQuestionsForTemplate(selectedQuestions);
 
-                response.statusCode = 403;
-                response.send("Couldn't generate Paper for less number of questions.");
+                // Generate PDF
+                const templateHtml = await getTemplateHtml();
+                
+                hb.registerHelper('img', function (data) {
+                    return new hb.SafeString(
+                        `<img src="${data}" width="100px" height="90px" style="margin-left: 4em;" />`
+                    );
+                });
 
-            }
-            else {
-                const ints = random.uniformInt(0, 5);
-                var selectQuestions = new Set();
-                var s2 = ints()
-                while (selectQuestions.size < s2) {
-                    var p = ints()
-                    selectQuestions.add(p);
-                }
-                units.forEach((value) => {
-                    var s1 = random.uniformInt(0, questions.easy[value].length - 1);
-                    var a = s1(), b = s1();
-                    while (a === b)
-                        b = s1();
-                    data.squestion.push(questions.easy[value][a].name)
-                    data.squestion.push(questions.easy[value][b].name)
-                })
+                hb.registerHelper('question', function (questions) {
+                    let str = '';
+                    
+                    str += `
+                        <style>
+                            .question-container { margin-bottom: 15px; }
+                            .question {
+                                font-size: 12pt;
+                                margin-bottom: 8px;
+                                font-weight: bold;
+                            }
+                            .options {
+                                margin-left: 20px;
+                                margin-bottom: 12px;
+                            }
+                            .option {
+                                margin-bottom: 8px;
+                                padding-left: 20px;
+                            }
+                            .answer-space {
+                                width: 100%;
+                                border-bottom: 1px dotted #ccc;
+                                margin-bottom: 20px;
+                            }
+                            .answer-space.easy { height: 250px; }
+                            .answer-space.medium { height: 400px; }
+                            .answer-space.hard { height: 900px; }
+                            .marks { float: right; font-weight: normal; }
+                            .page-break { page-break-after: always; }
+                        </style>
+                    `;
 
-                units.forEach((value, index) => {
-                    if (selectQuestions.has(index)) {
-                        var ser = new Set();
-                        var serrand = random.uniformInt(0, questions.medium[value].length - 1);
-                        while (ser.size < 4) {
-                            ser.add(serrand());
-                        }
-                        var iterator = ser.keys();
-                        // console.log(questions.medium[value][iterator.next()]);
-                        data.lquestion.push({
-                            '1': [
-                                questions.medium[value][iterator.next().value].name,
-                                questions.medium[value][iterator.next().value].name
-                            ],
-                            '2': [
-                                questions.medium[value][iterator.next().value].name,
-                                questions.medium[value][iterator.next().value].name,
-                            ]
-                        })
-                    } else {
-                        var s1 = random.uniformInt(0, questions.hard[value].length - 1);
-                        var a = s1(), b = s1();
-                        while (a === b)
-                            b = s1();
-                        data.lquestion.push({
-                            '1': questions.hard[value][a].name,
-                            '2': questions.hard[value][b].name
-                        })
+                    // Ensure questions is an array
+                    if (!Array.isArray(questions)) {
+                        console.error('Questions is not an array:', questions);
+                        return new hb.SafeString('Error: No questions available');
                     }
-                })
 
-                getTemplateHtml().then(async (res) => {
-
-                    hb.registerHelper('small', function (data) {
-                        var str = '<div class="questions">';
-                        str += '<div class="question">' + '1. a)&nbsp' + data[0] + '</div>';
-                        for (var i = 1; i < data.length; i++) {
-                            str += '<div class="question">' + '&nbsp&nbsp&nbsp&nbsp' + String.fromCharCode(97 + i) + ')&nbsp' + data[i] + '</div>';
+                    questions.forEach((q, index) => {
+                        if (!q || !q.text) {
+                            console.error('Invalid question:', q);
+                            return;
                         }
-                        str += '</div>';
-                        return new hb.SafeString(str);
-                    });
 
-                    hb.registerHelper('large', function (data) {
-                        var str = '<div class="questions">';
-                        var c = 2
-                        for (var i = 0; i < data.length; i++) {
-                            if (selectQuestions.has(i)) {
-                                for (var j in data[i]) {
-                                    str += '<div class="question">' + c + " " + '<span>' + String.fromCharCode(97) + ") " + data[i][j][0] + '</span>';
-                                    str += '<div class="multi">';
-                                    for (var k = 1; k < data[i][j].length; k++) {
-                                        str += '<span>' + String.fromCharCode(97 + k) + ") " + data[i][j][k] + '</span>';
-                                    }
-                                    str += '</div></div>'
-                                    if (j === '1') str += '<div class="limiters">OR</div>'
-                                    else str += '<div class="limiters">***</div>'
-                                    c += 1;
-                                }
-                            } else {
-                                for (var key in data[i]) {
-                                    str += '<div class="question">' + c + ' ' + data[i][key] + '</div>';
-                                    if (key === '1') str += '<div class="limiters">OR</div>'
-                                    else str += '<div class="limiters">***</div>'
-                                    c += 1;
-                                }
+                        str += '<div class="question-container">';
+                        str += `<div class="question">${index + 1}. ${q.text} <span class="marks">[${q.marks}]</span></div>`;
+
+                        if (q.type === 'mcq' && Array.isArray(q.options)) {
+                            str += '<div class="options">';
+                            q.options.forEach((opt, i) => {
+                                str += `<div class="option">${['a', 'b', 'c', 'd'][i]}) ${opt}</div>`;
+                            });
+                            str += '</div>';
+                        } else {
+                            str += `<div class="answer-space ${q.type}"></div>`;
+                            if (q.type === 'hard') {
+                                str += '<div class="page-break"></div>';
                             }
                         }
                         str += '</div>';
-                        return new hb.SafeString(str);
                     });
 
-                    console.log("Compiling the template with handlebars")
-                    const template = hb.compile(res, { strict: true });
-                    const result = template(data);
-                    const html = result;
-                    const browser = await puppeteer.launch({
-                        executablePath:'/opt/homebrew/bin/chromium',
-                        args: [
-                            '--no-sandbox',
-                            '--disable-setuid-sandbox',
-                        ],
-                    });
-                    const page = await browser.newPage()
-                    await page.setContent(html)
-                    await page.pdf({
-                        path: __dirname + '/demo.pdf',
-                        preferCSSPageSize: true,
-                        format: 'A4',
-                        margin: {
-                            top: '50px',
-                            left: '20px',
-                            right: '20px',
-                            bottom: '20px'
-                        }
-                    })
-                    await browser.close();
-                    console.log("PDF Generated")
-                    response.statusCode = 200;
-                    response.setHeader('Content-Type', 'application/pdf');
-                    response.sendFile(__dirname + '/demo.pdf');
-                }).catch(err => {
-                    console.error(err);
-                    next(err);
+                    return new hb.SafeString(str);
+                });
+
+                const template = hb.compile(templateHtml, { strict: true });
+                const html = template(data);
+
+                const browser = await puppeteer.launch({
+                    executablePath: '/opt/homebrew/bin/chromium',
+                    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+                });
+
+                const page = await browser.newPage();
+                await page.setContent(html);
+                await page.pdf({
+                    path: __dirname + '/demo.pdf',
+                    format: 'A4',
+                    landscape: false,
+                    margin: {
+                        top: '30px',
+                        bottom: '30px',
+                        left: '30px',
+                        right: '30px'
+                    },
+                    printBackground: true
+                });
+
+                await browser.close();
+                console.log("PDF Generated Successfully");
+                
+                response.statusCode = 200;
+                response.setHeader('Content-Type', 'application/pdf');
+                response.sendFile(__dirname + '/demo.pdf');
+
+            } catch (err) {
+                console.error("Error generating paper:", err);
+                return response.status(500).json({
+                    error: "Error generating paper",
+                    details: err.message
                 });
             }
+        } catch (err) {
+            console.error("General error:", err);
+            return response.status(500).json({
+                error: "Internal server error",
+                details: err.message
+            });
         }
-        generatePdf()
-    })
-    .put((req, res, next) => {
-        res.end('PUT Operation is not Performed');
-    })
-    .delete((req, res, next) => {
-        res.end('DELETE Operation is not Performed');
-    })
+    });
+
+function validateQuestions(questions) {
+    console.log("Starting validation...");
+    
+    // Count total available questions
+    const totalAvailable = {
+        mcq: 0,
+        easy: 0,
+        medium: 0,
+        hard: 0
+    };
+
+    // Count questions in each unit
+    units.forEach(unit => {
+        ['mcq', 'easy', 'medium', 'hard'].forEach(type => {
+            if (questions[type] && questions[type][unit]) {
+                totalAvailable[type] += questions[type][unit].length;
+            }
+        });
+    });
+
+    console.log("Total available questions:", totalAvailable);
+
+    // Minimum required questions
+    const required = {
+        mcq: markDistribution.mcq.count,    // 20
+        easy: markDistribution.easy.count,   // 8
+        medium: markDistribution.medium.count, // 4
+        hard: markDistribution.hard.count     // 2
+    };
+
+    // Check if we have enough questions
+    for (const type in required) {
+        if (totalAvailable[type] < required[type]) {
+            console.log(`Not enough ${type} questions. Need ${required[type]}, have ${totalAvailable[type]}`);
+            return {
+                isValid: false,
+                message: `Need at least ${required[type]} ${type} questions, found ${totalAvailable[type]}`
+            };
+        }
+    }
+
+    return { isValid: true };
+}
+
+function selectQuestionsFromUnits(questions, units) {
+    const allQuestions = {
+        mcq: [],
+        easy: [],
+        medium: [],
+        hard: []
+    };
+
+    // Collect all questions from all units
+    units.forEach(unit => {
+        ['mcq', 'easy', 'medium', 'hard'].forEach(type => {
+            if (questions[type] && questions[type][unit]) {
+                allQuestions[type].push(...questions[type][unit]);
+            }
+        });
+    });
+
+    // Randomly select required number of questions
+    const selected = {};
+    Object.keys(markDistribution).forEach(type => {
+        const shuffled = [...allQuestions[type]].sort(() => Math.random() - 0.5);
+        selected[type] = shuffled.slice(0, markDistribution[type].count);
+    });
+
+    return selected;
+}
+
+function formatQuestionsForTemplate(selectedQuestions) {
+    // Ensure we're returning a flat array of questions
+    let formattedQuestions = [];
+
+    // Add MCQs first
+    if (selectedQuestions.mcq && selectedQuestions.mcq.length > 0) {
+        formattedQuestions = selectedQuestions.mcq.map((q, index) => ({
+            number: index + 1,
+            text: q.name || '',
+            type: 'mcq',
+            marks: markDistribution.mcq.marks,
+            options: q.options || ['', '', '', '']
+        }));
+    }
+
+    // Add other questions
+    const types = ['easy', 'medium', 'hard'];
+    types.forEach(type => {
+        if (selectedQuestions[type] && selectedQuestions[type].length > 0) {
+            const questionsOfType = selectedQuestions[type].map(q => ({
+                number: formattedQuestions.length + 1,
+                text: q.name || '',
+                type: type,
+                marks: markDistribution[type].marks
+            }));
+            formattedQuestions = [...formattedQuestions, ...questionsOfType];
+        }
+    });
+
+    return formattedQuestions;
+}
+
+async function getTemplateHtml() {
+    try {
+        const invoicePath = path.resolve("routes/teachers/paperGenerator/getsem/demo.html");
+        return await readFile(invoicePath, 'utf8');
+    } catch (err) {
+        throw new Error("Could not load html template: " + err.message);
+    }
+}
+
 module.exports = semRouter;

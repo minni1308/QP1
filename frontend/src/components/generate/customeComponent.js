@@ -23,6 +23,7 @@ import DatePicker from "react-datepicker";
 import { baseUrl } from "../../url";
 
 const Custome = ({ subject, handleSchema }) => {
+  const [mcq, setMcq] = useState({ u1: false, u2: false, u3: false, u4: false, u5: false });
   const [easy, setEasy] = useState({ u1: false, u2: false, u3: false, u4: false, u5: false });
   const [medium, setMedium] = useState({ u1: false, u2: false, u3: false, u4: false, u5: false });
   const [hard, setHard] = useState({ u1: false, u2: false, u3: false, u4: false, u5: false });
@@ -49,12 +50,13 @@ const Custome = ({ subject, handleSchema }) => {
   const [maxMarks, setMaxMarks] = useState("");
 
   const [sublens, setSublens] = useState({
+    mcq: { u1: 5, u2: 3, u3: 2, u4: 1, u5: 0 },
     easy: { u1: 0, u2: 0, u3: 0, u4: 0, u5: 0 },
     medium: { u1: 0, u2: 0, u3: 0, u4: 0, u5: 0 },
-    hard: { u1: 0, u2: 0, u3: 0, u4: 0, u5: 0 },
+    hard: { u1: 0, u2: 0, u3: 0, u4: 0, u5: 0 }
   });
 
-  const difficultyMap = { easy: setEasy, medium: setMedium, hard: setHard };
+  const difficultyMap = { mcq: setMcq, easy: setEasy, medium: setMedium, hard: setHard };
 
   useEffect(() => {
     const getLengths = async () => {
@@ -65,6 +67,7 @@ const Custome = ({ subject, handleSchema }) => {
           headers: { Authorization: bearer },
         });
         const data = await res.json();
+        console.log("Fetched sublens:", data.sublens);
         setSublens(data.sublens);
         setIsloading(false);
       } catch (err) {
@@ -93,27 +96,22 @@ const Custome = ({ subject, handleSchema }) => {
   const removehandleToggle = () => setTRemoveModal(!tRemoveModal);
   const addhandleToggle = () => {
     const last = sections[sections.length - 1];
-    const type = last.type;
-
-    if (
-      last.sname === "" ||
-      last.marks === "" ||
-      (last.u1 === "" && !easy.u1) ||
-      (last.u2 === "" && !easy.u2) ||
-      (last.u3 === "" && !easy.u3) ||
-      (last.u4 === "" && !easy.u4)
-    ) {
-      alert("Please Enter all details!!!!!");
-      return;
+    
+    if (!last.type || !(last.type in sublens)) {
+        alert("Invalid question type selected");
+        return;
     }
 
-    const overLimit = ["u1", "u2", "u3", "u4", "u5"].some(
-      (unit) => Number(last[unit]) > sublens[type][unit]
-    );
-
-    if (overLimit) {
-      alert("You are requesting more questions than available.");
-      return;
+    if (
+        last.sname === "" ||
+        last.marks === "" ||
+        ["u1", "u2", "u3", "u4", "u5"].some(unit => 
+            last[unit] === "" || 
+            (Number(last[unit]) > (sublens[last.type]?.[unit] || 0))
+        )
+    ) {
+        alert("Please Enter valid details for all fields!");
+        return;
     }
 
     setTAddModal(!tAddModal);
@@ -124,65 +122,75 @@ const Custome = ({ subject, handleSchema }) => {
     const ind = updatedSections.length - 1;
     const sec = updatedSections[ind];
     const setDiff = difficultyMap[sec.type];
-    const updatedDiff = { ...{ ...easy, ...medium, ...hard }[sec.type] };
+    
+    if (!setDiff) {
+        console.error("Invalid question type:", sec.type);
+        return;
+    }
+
+    const currentState = sec.type === 'mcq' ? mcq :
+                        sec.type === 'easy' ? easy :
+                        sec.type === 'medium' ? medium : hard;
+    
+    const updatedDiff = { ...currentState };
 
     ["u1", "u2", "u3", "u4", "u5"].forEach((unit) => {
-      if (!updatedDiff[unit] && sec[unit] !== "0") {
-        updatedDiff[unit] = true;
-      } else {
-        sec[unit] = "";
-      }
+        if (!updatedDiff[unit] && sec[unit] !== "0") {
+            updatedDiff[unit] = true;
+        }
     });
 
     sec.done = true;
     updatedSections[ind] = sec;
     setSections([...updatedSections]);
-
     setDiff(updatedDiff);
 
-    const allUsed = Object.values(easy)
-      .concat(Object.values(medium))
-      .concat(Object.values(hard))
-      .every((val) => val === true);
+    const allUsed = Object.values(mcq)
+        .concat(Object.values(easy))
+        .concat(Object.values(medium))
+        .concat(Object.values(hard))
+        .every((val) => val === true);
 
-    if (allUsed) alert("No more sections possible");
-    else {
-      setSections([
-        ...updatedSections,
-        {
-          sname: "",
-          marks: "",
-          type: "easy",
-          u1: "",
-          u2: "",
-          u3: "",
-          u4: "",
-          u5: "",
-          done: false,
-        },
-      ]);
+    if (allUsed) {
+        alert("No more sections possible");
+    } else {
+        setSections([
+            ...updatedSections,
+            {
+                sname: "",
+                marks: "",
+                type: "mcq",  // Set default to MCQ
+                u1: "",
+                u2: "",
+                u3: "",
+                u4: "",
+                u5: "",
+                done: false,
+            },
+        ]);
     }
 
     setTAddModal(false);
   };
 
   const handleRemove = () => {
+    setMcq({ u1: false, u2: false, u3: false, u4: false, u5: false });
     setEasy({ u1: false, u2: false, u3: false, u4: false, u5: false });
     setMedium({ u1: false, u2: false, u3: false, u4: false, u5: false });
     setHard({ u1: false, u2: false, u3: false, u4: false, u5: false });
     setTRemoveModal(false);
     setSections([
-      {
-        sname: "",
-        marks: "",
-        type: "easy",
-        u1: "",
-        u2: "",
-        u3: "",
-        u4: "",
-        u5: "",
-        done: false,
-      },
+        {
+            sname: "",
+            marks: "",
+            type: "mcq",  // Set default to MCQ
+            u1: "",
+            u2: "",
+            u3: "",
+            u4: "",
+            u5: "",
+            done: false,
+        },
     ]);
   };
 
@@ -240,51 +248,48 @@ const Custome = ({ subject, handleSchema }) => {
         </FormGroup>
 
         {sections.map((q, i) => {
-          const type = q.type;
           return (
             <div key={i}>
-              <div style={{ marginLeft: "20vw", fontSize: "1.3em" }}>
-                Details for Section {i + 1}
-              </div>
               <Row>
-                <Col md={12} lg={8}>
+                <Col md={6}>
                   <FormGroup>
-                    <Label>Name of Section</Label>
+                    <Label>Section Name</Label>
                     <Input
                       type="text"
                       name="sname"
                       value={q.sname}
                       onChange={(e) => handleInput(i, e)}
+                      disabled={q.done}
                       required
                     />
-                    <FormText>Eg: Answer Any Five of the Following</FormText>
                   </FormGroup>
                 </Col>
-                <Col md={12} lg={4}>
+                <Col md={6}>
                   <FormGroup>
-                    <Label>Marks</Label>
+                    <Label>Max Marks for this Section</Label>
                     <Input
                       type="number"
                       name="marks"
                       value={q.marks}
                       onChange={(e) => handleInput(i, e)}
+                      disabled={q.done}
                       required
-                      min={0}
                     />
                   </FormGroup>
                 </Col>
               </Row>
               <Row>
-                <Col xs={12}>
+                <Col md={6}>
                   <FormGroup>
-                    <Label>Select Difficulty Level</Label>
+                    <Label>Question Type</Label>
                     <Input
                       type="select"
                       name="type"
+                      value={q.type}
                       onChange={(e) => handleInput(i, e)}
                       disabled={q.done}
-                      required
                     >
+                      <option value="mcq">MCQ</option>
                       <option value="easy">Easy</option>
                       <option value="medium">Medium</option>
                       <option value="hard">Hard</option>
@@ -292,7 +297,6 @@ const Custome = ({ subject, handleSchema }) => {
                   </FormGroup>
                 </Col>
               </Row>
-
               <Row>
                 {["u1", "u2", "u3", "u4", "u5"].map((unit) => (
                   <Col md={12} lg="auto" key={unit}>
@@ -301,7 +305,7 @@ const Custome = ({ subject, handleSchema }) => {
                       <InputGroup>
                         <InputGroupAddon addonType="prepend">
                           <InputGroupText>
-                            {sublens[type][unit]}
+                            {sublens[q.type]?.[unit] || 0}
                           </InputGroupText>
                         </InputGroupAddon>
                         <Input
@@ -309,8 +313,8 @@ const Custome = ({ subject, handleSchema }) => {
                           name={unit}
                           onChange={(e) => handleInput(i, e)}
                           value={q[unit]}
-                          disabled={eval(type)[unit] || q.done}
-                          max={sublens[type][unit]}
+                          disabled={q.done}
+                          max={sublens[q.type]?.[unit] || 0}
                           min={0}
                           required
                         />
