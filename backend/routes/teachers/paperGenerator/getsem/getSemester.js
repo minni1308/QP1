@@ -76,14 +76,13 @@ semRouter.route('/')
                 subjectname: req.body.label,
                 marks: '100',
                 branch: 'CSE',
-                starttime: req.body.start,
-                endtime: req.body.end,
                 date: req.body.date,
                 month: req.body.month,
                 Year: req.body.year,
+                time: req.body.hours,
                 questions: []
             };
-
+            console.log('present data', data);
             try {
                 // Select questions from all units with balanced distribution
                 const selectedQuestions = selectQuestionsFromUnits(questions, units);
@@ -133,15 +132,13 @@ semRouter.route('/')
                     // Ensure questions is an array
                     if (!Array.isArray(questions)) {
                         console.error('Questions is not an array:', questions);
-                        return new hb.SafeString('Error: No questions available');
+                        throw Error('Error: No questions available');
                     }
-
                     questions.forEach((q, index) => {
                         if (!q || !q.text) {
                             console.error('Invalid question:', q);
                             return;
                         }
-
                         str += '<div class="question-container">';
                         str += `<div class="question">${index + 1}. ${q.text} <span class="marks">[${q.marks}]</span></div>`;
 

@@ -8,6 +8,9 @@ import {
   Label,
   Input,
   UncontrolledTooltip,
+  Card,
+  CardBody,
+  CardTitle
 } from "reactstrap";
 import { WaveTopBottomLoading } from "react-loadingg";
 import localStorage from "local-storage";
@@ -141,81 +144,94 @@ class Profile extends Component {
   render() {
     const { user, updated, isDisabled, isLoading } = this.state;
 
-    if (isLoading) return <WaveTopBottomLoading />;
+    // Center the loading spinner if data is not yet available
+    if (isLoading) {
+      return (
+        <div className="d-flex justify-content-center align-items-center vh-100">
+          <WaveTopBottomLoading />
+        </div>
+      );
+    }
 
     const data = isDisabled ? user : updated;
 
     return (
-      <Form
-        onSubmit={isDisabled ? undefined : this.handleSubmit}
-        style={{ margin: "2% 7%" }}
+      <Row className="justify-content-center mt-5">
+        <Col xs={12} sm={10} md={8} lg={6}>
+          <Card className="shadow-sm">
+            <CardBody className="p-4">
+              <CardTitle tag="h3" className="text-center text-primary mb-4">
+                Profile
+              </CardTitle>
+
+              <Form onSubmit={isDisabled ? undefined : this.handleSubmit}>
+                <ProfileField
+                  label="Name"
+                  name="name"
+                  value={data.name}
+                  onChange={this.handleInput}
+                  disabled={isDisabled}
+                />
+
+                <ProfileField
+                  label="Email"
+                  name="username"
+                  type="email"
+                  value={data.username}
+                  onChange={this.handleInput}
+                  disabled={isDisabled}
+                  pattern="^[A-Za-z0-9.]+@bvrit\.ac\.in$"
+                  tooltip="Please use your college email ID"
+                />
+
+                <ProfileField
+                  label="Phone Number"
+                  name="phno"
+                  value={data.phno}
+                  onChange={this.handleInput}
+                  disabled={isDisabled}
+                  pattern="\+?\d[\d -]{8,12}\d$"
+                  tooltip="Please enter a valid phone number"
+                />
+
+<Row className="mt-4">
+  {isDisabled ? (
+    <Col className="d-flex justify-content-end">
+      <Button color="primary" size="sm" onClick={this.toggleEdit}>
+        Update
+      </Button>
+      <Button
+        color="success"
+        size="sm"
+        // Inline style to add left margin
+        style={{ marginLeft: "10px" }}
+        onClick={postLogout}
       >
-        <h3 style={{ color: "blue", marginLeft: "30vw" }}>Profile</h3>
-
-        <ProfileField
-          label="Name"
-          name="name"
-          value={data.name}
-          onChange={this.handleInput}
-          disabled={isDisabled}
-        />
-
-        <ProfileField
-          label="Email"
-          name="username"
-          type="email"
-          value={data.username}
-          onChange={this.handleInput}
-          disabled={isDisabled}
-          pattern="^[A-Za-z0-9.]+@bvrit\.ac\.in$"
-          tooltip="Please use your college email ID"
-        />
-
-        <ProfileField
-          label="Phone Number"
-          name="phno"
-          value={data.phno}
-          onChange={this.handleInput}
-          disabled={isDisabled}
-          pattern="\+?\d[\d -]{8,12}\d$"
-          tooltip="Please enter a valid phone number"
-        />
-
-        <Row style={{ marginLeft: "1.3em" }}>
-          {isDisabled ? (
-            <>
-              <Col xs={6}>
-                <Button color="primary" size="sm" onClick={this.toggleEdit}>
-                  Update
-                </Button>
-              </Col>
-              <Col xs={6}>
-                <Button color="success" size="sm" onClick={postLogout}>
-                  Logout
-                </Button>
-              </Col>
-            </>
-          ) : (
-            <>
-              <Col xs={6}>
-                <Button role="submit" color="success" size="sm">
-                  Save
-                </Button>
-              </Col>
-              <Col xs={6}>
-                <Button
-                  size="sm"
-                  color="white"
-                  style={{ border: "1px solid" }}
-                  onClick={this.toggleEdit}
-                >
-                  Cancel
-                </Button>
-              </Col>
-            </>
-          )}
-        </Row>
-      </Form>
+        Logout
+      </Button>
+    </Col>
+  ) : (
+    <Col className="d-flex justify-content-end">
+      <Button color="success" size="sm" type="submit">
+        Save
+      </Button>
+      <Button
+        size="sm"
+        color="secondary"
+        // Inline style to add left margin
+        style={{ marginLeft: "10px" }}
+        onClick={this.toggleEdit}
+      >
+        Cancel
+      </Button>
+    </Col>
+  )}
+</Row>
+              </Form>
+            </CardBody>
+          </Card>
+        </Col>
+      </Row>
     );
   }
 }
