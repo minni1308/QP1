@@ -30,30 +30,29 @@ const DisplayGeneratedQuestionsComponent = () => {
 
   const [selectedQuestions, setSelectedQuestions] = useState({
     easy: new Set(),
-    hard: new Set(),
     medium: new Set(),
+    hard: new Set(),
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Validate the received data
     if (!location.state) {
       console.error("No state received in location");
       setError("No questions data received. Please generate questions first.");
       return;
     }
 
-    if (Object.keys(questions).length === 0) {
-      console.warn("Empty questions array received");
-      setError("No questions were generated");
+    if (!questions || !questions.easy || !questions.medium || !questions.hard) {
+      console.warn("Invalid questions format received");
+      setError("Questions were not generated in the correct format");
       return;
     }
-  }, [location.state, questions, subject, chapterNumber]);
+  }, [location.state, questions]);
 
   const handleCheckboxChange = (level, index) => {
-    setSelectedQuestions((prev) => {
+    setSelectedQuestions(prev => {
       const updatedSet = new Set(prev[level]);
       if (updatedSet.has(index)) {
         updatedSet.delete(index);
@@ -62,7 +61,7 @@ const DisplayGeneratedQuestionsComponent = () => {
       }
       return {
         ...prev,
-        [level]: updatedSet,
+        [level]: updatedSet
       };
     });
   };
@@ -85,25 +84,31 @@ const DisplayGeneratedQuestionsComponent = () => {
     const payload = {
       [id]: {
         easy: {
-          [chapterNumber]: [],
+          [chapterNumber]: questions.easy
+            .filter((_, index) => selectedQuestions.easy.has(index))
+            .map(question => ({
+              name: question,
+              teacher: localStorage.get("user").id,
+            })),
         },
         medium: {
-          [chapterNumber]: [],
+          [chapterNumber]: questions.medium
+            .filter((_, index) => selectedQuestions.medium.has(index))
+            .map(question => ({
+              name: question,
+              teacher: localStorage.get("user").id,
+            })),
         },
         hard: {
-          [chapterNumber]: [],
+          [chapterNumber]: questions.hard
+            .filter((_, index) => selectedQuestions.hard.has(index))
+            .map(question => ({
+              name: question,
+              teacher: localStorage.get("user").id,
+            })),
         },
       },
     };
-
-    Object.keys(selectedQuestions).forEach((level) => {
-      Array.from(selectedQuestions[level]).forEach((index) => {
-        payload[id][level][chapterNumber].push({
-          name: questions[level][index],
-          teacher: localStorage.get("user").id,
-        });
-      });
-    });
 
     console.log("Sending questions to database:", payload);
 

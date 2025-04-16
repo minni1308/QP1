@@ -9,6 +9,7 @@ import Select from "react-select";
 import Edit from "./editComponent";
 import { WaveTopBottomLoading } from "react-loadingg";
 import localStorage from "local-storage";
+import McqEdit from "./mcqEditComponent";
 
 const Options = () => {
   const [subjects, setSubjects] = useState([]);
@@ -19,11 +20,13 @@ const Options = () => {
   const [selectedUnit, setSelectedUnit] = useState("");
   const [isEmpty, setIsEmpty] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedType, setSelectedType] = useState('');
 
-  const difficultyOptions = [
-    { label: "Easy", value: "easy" },
-    { label: "Medium", value: "medium" },
-    { label: "Hard", value: "hard" },
+  const options = [
+    { value: "mcq", label: "MCQ Questions" },
+    { value: "easy", label: "Easy Questions" },
+    { value: "medium", label: "Medium Questions" },
+    { value: "hard", label: "Hard Questions" },
   ];
 
   const unitOptions = [
@@ -145,6 +148,11 @@ const Options = () => {
     setIsLoading(true);
     setIsEmpty(false);
 
+    if (selectedDifficulty.value === 'mcq') {
+      setIsLoading(false);
+      return;
+    }
+
     getQuestions(
       { id: selectedSubject.id, unit: selectedUnit.value },
       selectedDifficulty.value
@@ -182,11 +190,17 @@ const Options = () => {
           </FormGroup>
           <FormGroup style={{ margin: "5%" }}>
             <Select
-              options={difficultyOptions}
-              onChange={setSelectedDifficulty}
-              placeholder="Select Difficulty"
+              options={options}
+              onChange={(option) => {
+                setSelectedDifficulty(option);
+                setSelectedType(option.value);
+              }}
+              placeholder="Select Question Type"
               value={selectedDifficulty}
-              onMenuOpen={() => setSelectedDifficulty("")}
+              onMenuOpen={() => {
+                setSelectedDifficulty("");
+                setSelectedType("");
+              }}
               isDisabled={questions.length > 0}
             />
           </FormGroup>
@@ -212,15 +226,24 @@ const Options = () => {
         </Form>
       </Col>
       <Col md={12} lg={8}>
-        <Edit
-          isEmpty={isEmpty}
-          questions={questions}
-          handleInput={handleInput}
-          removeClick={removeClick}
-          handleSubmit1={handleSubmit1}
-          removedQuestions={removedQuestions}
-          handleCancel={handleCancel}
-        />
+        {selectedType !== 'mcq' && !isEmpty && (
+          <Edit
+            isEmpty={isEmpty}
+            questions={questions}
+            handleInput={handleInput}
+            removeClick={removeClick}
+            handleSubmit1={handleSubmit1}
+            removedQuestions={removedQuestions}
+            handleCancel={handleCancel}
+          />
+        )}
+        {selectedType === 'mcq' && (
+          <McqEdit 
+            subject={selectedSubject}
+            unit={selectedUnit}
+            selectedType={selectedType}
+          />
+        )}
       </Col>
     </Row>
   );

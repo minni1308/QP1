@@ -61,6 +61,7 @@ const verifyEmail = require('./routes/teachers/verifyEmail');
 const easyEdit = require('./routes/teachers/editQuestions/easyEdit');
 const mediumEdit = require('./routes/teachers/editQuestions/mediumEdit');
 const hardEdit = require('./routes/teachers/editQuestions/hardEdit');
+const mcqEditRouter = require('./routes/teachers/editQuestions/mcqEdit');
 
 // Paper Generation
 const semPaper = require('./routes/teachers/paperGenerator/getsem/getSemester');
@@ -76,6 +77,9 @@ const adminDepartment = require('./routes/admin/department');
 const adminSubject = require('./routes/admin/subject');
 const teacherSubjectsRouter = require('./routes/admin/teacherSubjects');
 const adminTeachers = require('./routes/admin/teachers');
+
+// MCQ routes
+const mcqRouter = require('./routes/teachers/mcq');
 
 // ─────────────────────────────────────────────────────────────
 // Route Mounting
@@ -98,8 +102,11 @@ app.use('/teacher/schema', schemaPaper);
 app.use('/teacher/easy', easyEdit);
 app.use('/teacher/medium', mediumEdit);
 app.use('/teacher/hard', hardEdit);
+app.use('/teacher/mcqEdit', mcqEditRouter);
 
 app.use('/teacher/generate', generateQuestionsRouter);
+
+app.use('/teacher/mcq', mcqRouter);
 
 app.use('/admin/department', adminDepartment);
 app.use('/admin/subject', adminSubject);

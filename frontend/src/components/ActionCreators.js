@@ -105,3 +105,25 @@ export const updateProfile = (details) =>
     headers: getAuthHeaders(),
     body: JSON.stringify(details),
   });
+
+// Add these functions alongside other question-related functions
+
+export const getMcqs = (details) =>
+  fetch(`${baseUrl}/teacher/mcq/get`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(details),
+  });
+
+export const editMcqs = (details, id, unit) => {
+  const payload = {
+    id,
+    unit,
+    mcq: details
+  };
+  return fetch(`${baseUrl}/teacher/mcq/put`, {
+    method: "PUT",
+    headers: getAuthHeaders(),
+    body: JSON.stringify(payload),
+  });
+};
