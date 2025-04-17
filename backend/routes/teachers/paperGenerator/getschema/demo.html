@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{subjectname}} - Question Paper</title>
+    <style>
+      body {
+        font-family: 'Times New Roman', Times, serif;
+        margin: 40px;
+        padding: 0;
+        font-size: 12pt;
+      }
+
+      .main {
+        padding: 0;
+        width: 100%;
+        max-width: 8.5in;
+        margin: auto;
+      }
+
+      .paper-header {
+        margin-bottom: 15px;
+      }
+
+      .exam-main-title {
+        text-align: left;
+        font-size: 1.1em;
+        font-weight: normal;
+        margin-bottom: 25px;
+      }
+
+      .name-code-line {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 5px;
+        padding-bottom: 5px;
+        font-size: 1.1em;
+        border-bottom: 1px solid black;
+      }
+
+      .name-label {
+        width: 50%;
+      }
+
+      .course-code-header {
+        font-weight: bold;
+        text-align: right;
+        margin-right: 10%;
+      }
+
+      .instructions-paragraph {
+        font-size: 1em;
+        text-align: left;
+        margin-top: 10px;
+        margin-bottom: 25px;
+        line-height: 1.4;
+      }
+
+      /* Section container */
+      .section-container {
+        margin-top: 20px;
+      }
+
+      /* Section headers */
+      .secdetails {
+        display: flex;
+        justify-content: space-between;
+        margin: 10px 0;
+        font-size: 1.2em;
+        font-weight: 600;
+        border-bottom: 1px solid #aaa;
+        padding-bottom: 5px;
+      }
+
+      /* Question list */
+      .question-list {
+        padding-left: 0;
+        margin-bottom: 15px;
+        list-style-position: outside;
+      }
+
+      /* Individual question */
+      .question {
+        font-size: 1.1em;
+        margin-bottom: 40px; /* Add space between questions */
+        list-style-type: decimal;
+      }
+
+      /* Print styling */
+      @media print {
+        body {
+          padding: 20px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="main">
+      <div class="paper-header">
+        <div class="exam-main-title">
+          {{subjectname}} - {{month}} {{year}}
+        </div>
+
+        <div class="name-code-line">
+          <span class="name-label">Name: </span>
+          <span class="course-code-header">{{code}}</span>
+        </div>
+
+        <p class="instructions-paragraph">
+          When answering the questions below, make sure to show all of your work. Pay attention to the point values on each question. State your assumptions, and explain your answers thoroughly. Remember that an explanation is expected with every answer except the multiple choice and true/false questions when the answer is true. Use blank paper if you do not have enough room.
+          <br>
+          Time: {{time}} Hours | Total Marks: {{maxMarks}}
+        </p>
+      </div>
+
+      <!-- Section-wise Questions - keep the original section format but improve spacing -->
+      <div class="section-container">
+        {{section details}}
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,206 @@
+import React, { useState, useEffect } from 'react';
+import {
+  Container,
+  Card,
+  CardBody,
+  Button,
+  Alert,
+  Form,
+  FormGroup,
+  Label,
+  Input,
+  Badge,
+} from 'reactstrap';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { baseUrl } from '../../url';
+
+const DisplayGeneratedQuestionsComponent = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { questions, subject } = location.state || { questions: { easy: [], medium: [], hard: [] }, subject: '' };
+  
+  console.log('Location state:', location.state);
+  console.log('Received questions:', JSON.stringify(questions, null, 2));
+  console.log('Received subject:', subject);
+  
+  const [selectedQuestions, setSelectedQuestions] = useState({
+    easy: new Set(),
+    medium: new Set(),
+    hard: new Set()
+  });
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    console.log('Questions in useEffect:', JSON.stringify(questions, null, 2));
+    if (!questions || !questions.easy || !questions.medium || !questions.hard) {
+      console.error('Invalid questions data:', questions);
+      setError('Invalid questions data received');
+    }
+  }, [questions]);
+
+  const handleCheckboxChange = (difficulty, index) => {
+    const newSelected = { ...selectedQuestions };
+    if (newSelected[difficulty].has(index)) {
+      newSelected[difficulty].delete(index);
+    } else {
+      newSelected[difficulty].add(index);
+    }
+    setSelectedQuestions(newSelected);
+  };
+
+  const handleAddToDatabase = async () => {
+    const totalSelected = Object.values(selectedQuestions).reduce(
+      (sum, set) => sum + set.size, 0
+    );
+    
+    if (totalSelected === 0) {
+      setError('Please select at least one question');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    // Prepare questions for database
+    const selectedQuestionsArray = [];
+    ['easy', 'medium', 'hard'].forEach(difficulty => {
+      Array.from(selectedQuestions[difficulty]).forEach(index => {
+        selectedQuestionsArray.push({
+          text: questions[difficulty][index],
+          subject: subject,
+          difficulty: difficulty,
+          type: 'descriptive'
+        });
+      });
+    });
+
+    try {
+      const response = await fetch(`${baseUrl}/teacher/questions/add`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ questions: selectedQuestionsArray }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setSuccess('Questions successfully added to database!');
+        setSelectedQuestions({ easy: new Set(), medium: new Set(), hard: new Set() });
+      } else {
+        setError(data.message || 'Failed to add questions to database');
+      }
+    } catch (err) {
+      setError('An error occurred while adding questions to database');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGenerateMore = () => {
+    navigate('/teacher/generate-questions');
+  };
+
+  const renderQuestionsByDifficulty = (difficulty) => {
+    console.log(`Rendering ${difficulty} questions:`, questions[difficulty]);
+    if (!questions || !questions[difficulty] || questions[difficulty].length === 0) {
+      console.log(`No ${difficulty} questions to display`);
+      return null;
+    }
+
+    return (
+      <div className="mb-4">
+        <h4>
+          <Badge color={difficulty === 'easy' ? 'success' : difficulty === 'medium' ? 'warning' : 'danger'} className="mb-3">
+            {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)} Questions
+          </Badge>
+        </h4>
+        {questions[difficulty].map((question, index) => (
+          <Card key={index} className="mb-3">
+            <CardBody>
+              <div className="d-flex align-items-start">
+                <FormGroup check className="me-3">
+                  <Input
+                    type="checkbox"
+                    checked={selectedQuestions[difficulty].has(index)}
+                    onChange={() => handleCheckboxChange(difficulty, index)}
+                  />
+                </FormGroup>
+                <div>
+                  <h5>Question {index + 1}</h5>
+                  <p>{question}</p>
+                </div>
+              </div>
+            </CardBody>
+          </Card>
+        ))}
+      </div>
+    );
+  };
+
+  return (
+    <Container className="mt-4 mb-4">
+      <h2 className="text-center mb-4">Generated Questions</h2>
+      
+      {error && <Alert color="danger">{error}</Alert>}
+      {success && <Alert color="success">{success}</Alert>}
+
+      <div className="mb-3 d-flex justify-content-between">
+        <Button 
+          color="primary" 
+          onClick={handleAddToDatabase}
+          disabled={loading || Object.values(selectedQuestions).every(set => set.size === 0)}
+        >
+          {loading ? 'Adding...' : 'Add Selected to Database'}
+        </Button>
+        <Button color="secondary" onClick={handleGenerateMore}>
+          Generate More Questions
+        </Button>
+      </div>
+
+      {renderQuestionsByDifficulty('easy')}
+      {renderQuestionsByDifficulty('medium')}
+      {renderQuestionsByDifficulty('hard')}
+
+      {(!questions || !questions.easy?.length && !questions.medium?.length && !questions.hard?.length) && (
+        <Alert color="info">
+          No questions generated yet. Please go back and generate some questions.
+        </Alert>
+      )}
+    </Container>
+  );
+};
+
+export default DisplayGeneratedQuestionsComponent; 
+
+
+
+
+
+
+
+
+const prompt = `Generate ${numQuestions} descriptive questions based on the following content.
+                    Make the questions ${difficulty} difficulty level.
+                    Format your response as a JSON array of objects. Each object should have:
+                    - "text": the question text
+
+Content to generate questions from:
+${content}
+
+Remember to:
+- Make questions clear and thought-provoking
+- Make them appropriate for ${difficulty} level
+- Test understanding and analytical skills
+
+Example format:
+[
+  {
+    "text": "Analyze the key concepts discussed in the content...",
+  }
+]`;
