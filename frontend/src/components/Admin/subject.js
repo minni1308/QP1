@@ -38,6 +38,7 @@ const Subject = () => {
   const [lsem, setLsem] = useState('');
   const [lcode, setLcode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isListOpen, setIsListOpen] = useState(false);
 
   const years = [
     { label: 'I', value: '1' },
@@ -136,20 +137,17 @@ const Subject = () => {
     }
   };
 
+  const toggleList = () => {
+    setIsListOpen(!isListOpen);
+  };
+
   const listSubjects = async (e) => {
-    e.preventDefault(); // Prevent form submission refresh
+    if (e) {
+      e.preventDefault(); // Prevent form submission refresh
+    }
 
     setIsLoading(true);
     try {
-      // Only make the API call if either a subject code or all three filters are provided
-      const hasAllFilters = ldept?.value && lyear?.value && lsem?.value;
-      const hasCode = lcode;
-
-      if (!hasAllFilters && !hasCode) {
-        // If no filters, get all subjects
-        console.log("Fetching all subjects...");
-      }
-
       const res = await getSubjects({
         name: ldept?.value || '',
         year: lyear?.value || '',
@@ -169,14 +167,6 @@ const Subject = () => {
           sem: sub.department?.semester || sub.sem
         }));
         setSubjectList(formattedList);
-
-        // Only clear filters if the request was successful
-        if (result.success) {
-          setLdept('');
-          setLyear('');
-          setLsem('');
-          setLcode('');
-        }
       } else {
         alert('No matching subjects found');
         setSubjectList([]);
@@ -286,10 +276,15 @@ const Subject = () => {
       </UncontrolledCollapse>
 
       {/* List Subjects */}
-      <Button block color="info" id="list" style={{ marginBottom: '1rem' }}>
+      <Button 
+        block 
+        color="info" 
+        onClick={toggleList} 
+        style={{ marginBottom: '1rem' }}
+      >
         List all Subjects in Department
       </Button>
-      <UncontrolledCollapse toggler="#list">
+      <div className={isListOpen ? 'show' : 'collapse'}>
         <Form onSubmit={listSubjects}>
           <Row>
             <Col>
@@ -300,11 +295,9 @@ const Subject = () => {
                   value={ldept}
                   onChange={(value) => {
                     setLdept(value);
-                    // Clear code when using filters
                     setLcode('');
                   }}
                   placeholder="Select Department"
-                  onMenuOpen={() => setLdept('')}
                 />
               </FormGroup>
             </Col>
@@ -316,11 +309,9 @@ const Subject = () => {
                   value={lyear}
                   onChange={(value) => {
                     setLyear(value);
-                    // Clear code when using filters
                     setLcode('');
                   }}
                   placeholder="Select Year"
-                  onMenuOpen={() => setLyear('')}
                 />
               </FormGroup>
             </Col>
@@ -332,11 +323,9 @@ const Subject = () => {
                   value={lsem}
                   onChange={(value) => {
                     setLsem(value);
-                    // Clear code when using filters
                     setLcode('');
                   }}
                   placeholder="Select Semester"
-                  onMenuOpen={() => setLsem('')}
                 />
               </FormGroup>
             </Col>
@@ -351,7 +340,6 @@ const Subject = () => {
               value={lcode}
               onChange={(e) => {
                 setLcode(e.target.value);
-                // Clear filters when using code
                 setLdept('');
                 setLyear('');
                 setLsem('');
@@ -361,14 +349,16 @@ const Subject = () => {
           </FormGroup>
           <Button 
             color="info" 
-            type="submit" 
+            onClick={(e) => {
+              e.preventDefault();
+              listSubjects();
+            }}
             style={{ marginLeft: '40%' }}
-            onClick={listSubjects}
           >
             Submit
           </Button>
         </Form>
-        {subjectList.length > 0 && (
+        {subjectList.length > 0 ? (
           <Table hover style={{ marginTop: '20px' }}>
             <thead>
               <tr>
@@ -393,8 +383,19 @@ const Subject = () => {
               ))}
             </tbody>
           </Table>
+        ) : (
+          <div style={{ 
+            textAlign: 'center', 
+            marginTop: '20px', 
+            padding: '20px',
+            backgroundColor: '#f8f9fa',
+            borderRadius: '4px',
+            color: '#6c757d'
+          }}>
+            No subjects present
+          </div>
         )}
-      </UncontrolledCollapse>
+      </div>
     </div>
   );
 };

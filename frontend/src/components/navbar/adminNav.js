@@ -22,7 +22,7 @@ const AdminLoginNav = ({ user }) => {
   return (
     <div style={{ width: "100vw" }}>
       <Navbar color="light" light expand="lg">
-        <NavbarBrand tag={Link} to="/home" style={{ color: "black" }}>
+        <NavbarBrand tag={Link} to="/admin/home" style={{ color: "black" }}>
           <img src="/favicon.ico" alt="icon" width={60} /> {"  "}
           QP Generator
         </NavbarBrand>
