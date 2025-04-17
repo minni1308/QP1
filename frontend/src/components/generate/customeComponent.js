@@ -64,7 +64,6 @@ const Custome = ({ subject, handleSchema }) => {
       setIsloading(true);
       // const bearer = "Bearer " + localStorage.get("token");
       try {
-        console.log(subject.id)
         const questions = await getSubjectDetails(subject.id)
         const data = await questions.json()
         const subjectQuestionsID = data[0]._id
@@ -78,7 +77,7 @@ const Custome = ({ subject, handleSchema }) => {
       } catch (err) {
         console.log(err);
         setIsloading(false);
-        alert("Cannot Connect to Server!!!, Logging Out...");
+        alert("Cannot Connect to Server!!!, Please contact administrator");
       }
     };
 

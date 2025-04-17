@@ -22,6 +22,8 @@ const McqEdit = ({ subject, unit, selectedType }) => {
   const [modal, setModal] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [editingIndex, setEditingIndex] = useState(null);
+  const [questionId, setQuestionId] = useState('');
+  
 
   useEffect(() => {
     if (subject && unit && selectedType === 'mcq') {
@@ -31,8 +33,9 @@ const McqEdit = ({ subject, unit, selectedType }) => {
       getMcqs({ id: subject.id, unit: unit.value })
         .then(response => response.json())
         .then(data => {
-          if (Array.isArray(data)) {
-            setQuestions(data);
+          if (Array.isArray(data.questions)) {
+            setQuestionId(data.questionId);
+            setQuestions(data.questions);
             setRemovedQuestions(new Array(data.length).fill(false));
           }
           setIsLoading(false);
@@ -88,7 +91,7 @@ const McqEdit = ({ subject, unit, selectedType }) => {
     setQuestions(updatedQuestions);
 
     // Update backend
-    editMcqs(updatedQuestions, subject.id, unit.value)
+    editMcqs(updatedQuestions, questionId, unit.value)
       .then(response => response.json())
       .then(res => {
         if (res.success) {
@@ -102,7 +105,14 @@ const McqEdit = ({ subject, unit, selectedType }) => {
         // Revert changes if update fails
         getMcqs({ id: subject.id, unit: unit.value })
           .then(response => response.json())
-          .then(data => setQuestions(data));
+          .then(data => {
+            if (Array.isArray(data.questions)) {
+              setQuestionId(data.questionId);
+              setQuestions(data.questions);
+              setRemovedQuestions(new Array(data.length).fill(false));
+            }
+            setIsLoading(false);
+          });
       });
   };
 
@@ -116,7 +126,7 @@ const McqEdit = ({ subject, unit, selectedType }) => {
     }
 
     setIsLoading(true);
-    editMcqs(remainingQuestions, subject.id, unit.value)
+    editMcqs(remainingQuestions, questionId, unit.value)
       .then(response => response.json())
       .then(res => {
         if (res.success) {

@@ -3,7 +3,7 @@ var easyEditRouter = express.Router();
 var authenticate = require('../../../authenticate');
 var question = require('../../../models/questions');
 var cors = require('../../cors');
-
+const { ObjectId } = require('mongodb');
 easyEditRouter.use(express.json());
 easyEditRouter.route('/get')
     .options(cors.corsWithOptions, (req, resp) => { resp.sendStatus(200); })
@@ -12,46 +12,62 @@ easyEditRouter.route('/get')
     })
     .post(cors.corsWithOptions, authenticate.verifyUser, async (req, response, next) => {
         try {
+            const subjectId = ObjectId(req.body.id);
             if (req.body.unit === 'u1') {
-                var questions = await question.findById(req.body.id, { "easy.u1": 1 })
+                var questions = await question.findOne({subject: subjectId}, { "easy.u1": 1 })
                 var teacherQuestions = questions.easy.u1.filter((data) => {
                     return data.teacher.equals(req.user._id);
                 })
                 response.statusCode = 200;
                 response.setHeader('Content-Type', 'application/json');
-                response.json(teacherQuestions);
+                response.json({
+                    questionId: questions._id,
+                    questions: teacherQuestions
+                });
             } else if (req.body.unit === 'u2') {
-                var questions = await question.findById(req.body.id, { "easy.u2": 1 })
+                var questions = await question.findOne({subject: subjectId}, { "easy.u2": 1 })
                 var teacherQuestions = questions.easy.u2.filter((data) => {
                     return data.teacher.equals(req.user._id);
                 })
                 response.statusCode = 200;
                 response.setHeader('Content-Type', 'application/json');
-                response.json(teacherQuestions);
+                response.json({
+                    questionId: questions._id,
+                    questions: teacherQuestions
+                });
             } else if (req.body.unit === 'u3') {
-                var questions = await question.findById(req.body.id, { "easy.u3": 1 })
+                var questions = await question.findOne({subject: subjectId}, { "easy.u3": 1 })
                 var teacherQuestions = questions.easy.u3.filter((data) => {
                     return data.teacher.equals(req.user._id);
                 })
                 response.statusCode = 200;
                 response.setHeader('Content-Type', 'application/json');
-                response.json(teacherQuestions);
+                response.json({
+                    questionId: questions._id,
+                    questions: teacherQuestions
+                });
             } else if (req.body.unit === 'u4') {
-                var questions = await question.findById(req.body.id, { "easy.u4": 1 })
+                var questions = await question.findOne({subject: subjectId}, { "easy.u4": 1 })
                 var teacherQuestions = questions.easy.u4.filter((data) => {
                     return data.teacher.equals(req.user._id);
                 })
                 response.statusCode = 200;
                 response.setHeader('Content-Type', 'application/json');
-                response.json(teacherQuestions);
+                response.json({
+                    questionId: questions._id,
+                    questions: teacherQuestions
+                });
             } else {
-                var questions = await question.findById(req.body.id, { "easy.u5": 1 })
+                var questions = await question.findOne({subject: subjectId}, { "easy.u5": 1 })
                 var teacherQuestions = questions.easy.u5.filter((data) => {
                     return data.teacher.equals(req.user._id);
                 })
                 response.statusCode = 200;
                 response.setHeader('Content-Type', 'application/json');
-                response.json(teacherQuestions);
+                response.json({
+                    questionId: questions._id,
+                    questions: teacherQuestions
+                });
             }
         } catch (err) {
             console.log(err);

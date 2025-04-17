@@ -3,6 +3,8 @@ const mcqEditRouter = express.Router();
 const authenticate = require('../../../authenticate');
 const question = require('../../../models/questions'); // Correct path to models
 const cors = require('../../cors');
+const { ObjectId } = require('mongodb');
+
 
 mcqEditRouter.use(express.json());
 
@@ -27,9 +29,10 @@ mcqEditRouter.route('/get')
 
             const mcqField = `mcq.${unit}`;
             const projection = { [mcqField]: 1, _id: 0 };
-
-            const questionsDoc = await question.findById(id, projection);
-            
+            console.log(projection)
+            const subjectId = ObjectId(req.body.id);
+            const questionsDoc = await question.findOne({subject: subjectId}, projection);
+            console.log(questionsDoc)
             if (!questionsDoc || !questionsDoc.mcq || !questionsDoc.mcq[unit]) {
                 return res.status(200).json([]); 
             }
@@ -39,7 +42,10 @@ mcqEditRouter.route('/get')
                 q && q.teacher && q.teacher.equals(req.user._id)
             );
 
-            res.status(200).json(teacherQuestions);
+            res.status(200).json({
+                questionId: questionsDoc._id,
+                questions: teacherQuestions
+            });
         } catch (error) {
             console.error('MCQ fetch error:', error);
             res.status(500).json({ 

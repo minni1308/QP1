@@ -40,10 +40,13 @@ questionRouter
   .get(cors.corsWithOptions, authenticate.verifyUser, async (req, res, next) => {
     try {
       let subId = {}
-      if(req.params.id)
+      console.log(req.params.id)
+      if(req.params.id !== 'undefined') {
+        console.log('inside')
         subId= {
           subject: ObjectID(req.params.id)
         }
+      }
 
       const list = await question.find(subId, { subject: 1 }).populate({
         path: "subject",

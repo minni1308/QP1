@@ -3,6 +3,7 @@ var hardEditRouter = express.Router();
 var authenticate = require('../../../authenticate');
 var question = require('../../../models/questions');
 var cors = require('../../cors');
+const { ObjectId } = require('mongodb');
 
 hardEditRouter.use(express.json());
 hardEditRouter.route('/get')
@@ -12,46 +13,62 @@ hardEditRouter.route('/get')
     })
     .post(cors.corsWithOptions, authenticate.verifyUser, async (req, response, next) => {
         try {
+            const subjectId = ObjectId(req.body.id);
             if (req.body.unit === 'u1') {
-                var questions = await question.findById(req.body.id, { "hard.u1": 1 })
+                var questions = await question.findOne({subject: subjectId}, { "hard.u1": 1 })
                 var teacherQuestions = questions.hard.u1.filter((data) => {
                     return data.teacher.equals(req.user._id);
                 })
                 response.statusCode = 200;
                 response.setHeader('Content-Type', 'application/json');
-                response.json(teacherQuestions);
+                response.json({
+                    questionId: questions._id,
+                    questions: teacherQuestions
+                });
             } else if (req.body.unit === 'u2') {
-                var questions = await question.findById(req.body.id, { "hard.u2": 1 })
+                var questions = await question.findOne({subject: subjectId}, { "hard.u2": 1 })
                 var teacherQuestions = questions.hard.u2.filter((data) => {
                     return data.teacher.equals(req.user._id);
                 })
                 response.statusCode = 200;
                 response.setHeader('Content-Type', 'application/json');
-                response.json(teacherQuestions);
+                response.json({
+                    questionId: questions._id,
+                    questions: teacherQuestions
+                });
             } else if (req.body.unit === 'u3') {
-                var questions = await question.findById(req.body.id, { "hard.u3": 1 })
+                var questions = await question.findOne({subject: subjectId}, { "hard.u3": 1 })
                 var teacherQuestions = questions.hard.u3.filter((data) => {
                     return data.teacher.equals(req.user._id);
                 })
                 response.statusCode = 200;
                 response.setHeader('Content-Type', 'application/json');
-                response.json(teacherQuestions);
+                response.json({
+                    questionId: questions._id,
+                    questions: teacherQuestions
+                });
             } else if (req.body.unit === 'u4') {
-                var questions = await question.findById(req.body.id, { "hard.u4": 1 })
+                var questions = await question.findOne({subject: subjectId}, { "hard.u4": 1 })
                 var teacherQuestions = questions.hard.u4.filter((data) => {
                     return data.teacher.equals(req.user._id);
                 })
                 response.statusCode = 200;
                 response.setHeader('Content-Type', 'application/json');
-                response.json(teacherQuestions);
+                response.json({
+                    questionId: questions._id,
+                    questions: teacherQuestions
+                });
             } else {
-                var questions = await question.findById(req.body.id, { "hard.u5": 1 })
+                var questions = await question.findOne({subject: subjectId}, { "hard.u5": 1 })
                 var teacherQuestions = questions.hard.u5.filter((data) => {
                     return data.teacher.equals(req.user._id);
                 })
                 response.statusCode = 200;
                 response.setHeader('Content-Type', 'application/json');
-                response.json(teacherQuestions);
+                response.json({
+                    questionId: questions._id,
+                    questions: teacherQuestions
+                });
             }
         } catch (err) {
             console.log(err);

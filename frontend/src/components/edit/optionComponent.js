@@ -3,6 +3,7 @@ import {
   getSubjectDetails,
   getQuestions,
   editQuestions,
+  getAuthHeaders
 } from "../ActionCreators";
 import { Col, Row, Button, Form, FormGroup } from "reactstrap";
 import Select from "react-select";
@@ -10,6 +11,7 @@ import Edit from "./editComponent";
 import { WaveTopBottomLoading } from "react-loadingg";
 import localStorage from "local-storage";
 import McqEdit from "./mcqEditComponent";
+import { baseUrl } from "../../url";
 
 const Options = () => {
   const [subjects, setSubjects] = useState([]);
@@ -21,6 +23,7 @@ const Options = () => {
   const [isEmpty, setIsEmpty] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedType, setSelectedType] = useState('');
+  const [questionId, setQuestionId] = useState('');
 
   const options = [
     { value: "mcq", label: "MCQ Questions" },
@@ -40,27 +43,50 @@ const Options = () => {
   useEffect(() => {
     if (subjects.length === 0) {
       setIsLoading(true);
-      getSubjectDetails()
-        .then((res) => res.json())
-        .then((data) => {
-          const formatted = data.map((element) => ({
-            label: element.subject.name,
-            value: element.subject.code,
-            id: element._id,
-            deptYear: element.subject.department.year,
-            deptSem: element.subject.department.semester,
+      const user = localStorage.get('user');
+      fetch(`${baseUrl}/admin/teachersubjects/${user.id}`, {
+        headers: getAuthHeaders()
+      })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Failed to fetch teacher subjects');
+        }
+        return res.json();
+      })
+      .then(data => {
+        if (!data.success || !Array.isArray(data.subjects)) {
+          console.warn('No subjects found or invalid response format');
+          setSubjects([]);
+          return;
+        }
+
+        const opts = data.subjects
+          .filter(subj => subj && subj.name && subj.code) // Filter out invalid subjects
+          .map((subj) => ({
+            id: subj._id,
+            label: subj.name,
+            value: subj.code,
+            deptSem: subj.department.semester,
+            deptYear: subj.department.year
           }));
-          setSubjects(formatted);
-          setIsLoading(false);
-        })
-        .catch(() => {
-          setIsLoading(false);
-          alert("Cannot Connect to Server!!!!, Logging out.....");
-          // localStorage.clear();
-          // window.location.reload();
-        });
+        
+        if (opts.length === 0) {
+          console.warn('No subjects assigned to this teacher');
+        } else {
+          console.log('Loaded subjects:', opts);
+        }
+        
+        setSubjects(opts);
+        setIsLoading(false);
+      })
+      .catch(() => {
+        setIsLoading(false);
+        alert("Cannot Connect to Server!!!!");
+        // localStorage.clear();
+        // window.location.reload();
+      });
     }
-  }, []);
+  }, [subjects.length]);
 
   const handleInput = (index, e) => {
     const updatedQuestions = [...questions];
@@ -114,7 +140,7 @@ const Options = () => {
     setIsLoading(true);
     editQuestions(
       cleanedQuestions,
-      selectedSubject.id,
+      questionId,
       selectedDifficulty.value,
       selectedUnit.value
     )
@@ -159,16 +185,14 @@ const Options = () => {
     )
       .then((res) => res.json())
       .then((data) => {
-        console.log('Fetched questions:', data);
-        setQuestions(data);
+        setQuestions(data.questions);
+        setQuestionId(data.questionId);
         setRemovedQuestions(new Array(data.length).fill(false));
         setIsLoading(false);
       })
       .catch(() => {
         setIsLoading(false);
-        alert("Cannot Connect to Server!!!, Logging Out...");
-        localStorage.clear();
-        window.location.reload();
+        alert("Cannot Connect to Server!!!,");
       });
   };
 

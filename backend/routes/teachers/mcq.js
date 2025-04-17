@@ -3,6 +3,7 @@ const mcqRouter = express.Router();
 const authenticate = require('../../authenticate');
 const Questions = require('../../models/questions');
 const cors = require('../cors');
+const { ObjectId } = require('mongodb');
 
 mcqRouter.use(express.json());
 
@@ -10,8 +11,8 @@ mcqRouter.route('/get')
     .options(cors.corsWithOptions, (req, res) => { res.sendStatus(200); })
     .post(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
         const { id, unit } = req.body;
-        
-        Questions.findById(id)
+        const subjectId = ObjectId(id);
+        Questions.findOne({subject: subjectId})
             .then((doc) => {
                 if (!doc || !doc.mcq || !doc.mcq[unit]) {
                     return res.json([]);
@@ -20,7 +21,11 @@ mcqRouter.route('/get')
                 const questions = doc.mcq[unit].filter(q => 
                     q.teacher && q.teacher.equals(req.user._id)
                 );
-                res.json(questions);
+                console.log(doc._id)
+                res.json({
+                    questionId: doc._id,
+                    questions: questions
+                });
             })
             .catch((err) => next(err));
     });

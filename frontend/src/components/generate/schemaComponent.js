@@ -56,19 +56,6 @@ const Schema = () => {
   useEffect(() => {
     if (subjects.length === 0) {
       setIsLoading(true);
-
-      // getSubjectDetails()
-      //   .then((res) => res.json())
-      //   .then((res) => {
-      //     const formatted = res.map((el) => ({
-      //       label: el.subject.name,
-      //       value: el.subject.code,
-      //       id: el._id,
-      //       deptYear: el.subject.department.year,
-      //       deptSem: el.subject.department.semester,
-      //     }));
-      //     setSubjects(formatted);
-      //   })
       const user = localStorage.get('user');
       fetch(`${baseUrl}/admin/teachersubjects/${user.id}`, {
         headers: getAuthHeaders()

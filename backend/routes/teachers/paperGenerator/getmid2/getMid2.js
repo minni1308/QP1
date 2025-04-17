@@ -13,6 +13,7 @@ const readFile = utils.promisify(fs.readFile);
 
 const random = require('random');
 var seedrandom = require('seedrandom');
+const { ObjectID } = require('mongodb');
 random.use(seedrandom('qpgenerator'));
 
 // Define mark distribution (Total 75 marks)
@@ -39,7 +40,9 @@ mid2Router.route('/')
             }
 
             // Fetch questions with all types
-            const questions = await question.findById(req.body.id);
+            const subjectId = ObjectID(req.body.id);
+            const questions = await question.findOne({subject: subjectId});
+            
             
             if (!questions) {
                 console.log("No questions found for ID:", req.body.id);
@@ -162,7 +165,7 @@ mid2Router.route('/')
                 const html = template(data);
 
                 const browser = await puppeteer.launch({
-                    executablePath: '/opt/homebrew/bin/chromium',
+                    // executablePath: '/opt/homebrew/bin/chromium',
                     args: ['--no-sandbox', '--disable-setuid-sandbox'],
                 });
 

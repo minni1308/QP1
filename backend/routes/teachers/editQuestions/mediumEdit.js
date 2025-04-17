@@ -3,6 +3,8 @@ var mediumEditRouter = express.Router();
 var authenticate = require('../../../authenticate');
 var question = require('../../../models/questions');
 var cors = require('../../cors');
+const { ObjectId } = require('mongodb');
+
 
 mediumEditRouter.use(express.json());
 mediumEditRouter.route('/get')
@@ -12,46 +14,62 @@ mediumEditRouter.route('/get')
     })
     .post(cors.corsWithOptions, authenticate.verifyUser, async (req, response, next) => {
         try {
+            const subjectId = ObjectId(req.body.id);
             if (req.body.unit === 'u1') {
-                var questions = await question.findById(req.body.id, { "medium.u1": 1 })
+                var questions = await question.findOne({subject: subjectId}, { "medium.u1": 1 })
                 var teacherQuestions = questions.medium.u1.filter((data) => {
                     return data.teacher.equals(req.user._id);
                 })
                 response.statusCode = 200;
                 response.setHeader('Content-Type', 'application/json');
-                response.json(teacherQuestions);
+                response.json({
+                    questionId: questions._id,
+                    questions: teacherQuestions
+                });
             } else if (req.body.unit === 'u2') {
-                var questions = await question.findById(req.body.id, { "medium.u2": 1 })
+                var questions = await question.findOne({subject: subjectId}, { "medium.u2": 1 })
                 var teacherQuestions = questions.medium.u2.filter((data) => {
                     return data.teacher.equals(req.user._id);
                 })
                 response.statusCode = 200;
                 response.setHeader('Content-Type', 'application/json');
-                response.json(teacherQuestions);
+                response.json({
+                    questionId: questions._id,
+                    questions: teacherQuestions
+                });
             } else if (req.body.unit === 'u3') {
-                var questions = await question.findById(req.body.id, { "medium.u3": 1 })
+                var questions = await question.findOne({subject: subjectId}, { "medium.u3": 1 })
                 var teacherQuestions = questions.medium.u3.filter((data) => {
                     return data.teacher.equals(req.user._id);
                 })
                 response.statusCode = 200;
                 response.setHeader('Content-Type', 'application/json');
-                response.json(teacherQuestions);
+                response.json({
+                    questionId: questions._id,
+                    questions: teacherQuestions
+                });
             } else if (req.body.unit === 'u4') {
-                var questions = await question.findById(req.body.id, { "medium.u4": 1 })
+                var questions = await question.findOne({subject: subjectId}, { "medium.u4": 1 })
                 var teacherQuestions = questions.medium.u4.filter((data) => {
                     return data.teacher.equals(req.user._id);
                 })
                 response.statusCode = 200;
                 response.setHeader('Content-Type', 'application/json');
-                response.json(teacherQuestions);
+                response.json({
+                    questionId: questions._id,
+                    questions: teacherQuestions
+                });
             } else {
-                var questions = await question.findById(req.body.id, { "medium.u5": 1 })
+                var questions = await question.findOne({subject: subjectId}, { "medium.u5": 1 })
                 var teacherQuestions = questions.medium.u5.filter((data) => {
                     return data.teacher.equals(req.user._id);
                 })
                 response.statusCode = 200;
                 response.setHeader('Content-Type', 'application/json');
-                response.json(teacherQuestions);
+                response.json({
+                    questionId: questions._id,
+                    questions: teacherQuestions
+                });
             }
         } catch (err) {
             console.log(err);

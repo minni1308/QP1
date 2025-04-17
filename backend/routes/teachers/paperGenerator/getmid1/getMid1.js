@@ -13,6 +13,7 @@ const readFile = utils.promisify(fs.readFile);
 
 const random = require('random');
 var seedrandom = require('seedrandom');
+const { ObjectId } = require('mongodb');
 random.use(seedrandom('qpgenerator'));
 
 // Define mark distribution (Total 75 marks)
@@ -39,7 +40,8 @@ mid1Router.route('/')
             }
 
             // Fetch questions with all types
-            const questions = await question.findById(req.body.id);
+            const subjectId = ObjectId(req.body.id);
+            const questions = await question.findOne({subject: subjectId});
             
             if (!questions) {
                 console.log("No questions found for ID:", req.body.id);
@@ -192,7 +194,7 @@ mid1Router.route('/')
                 const html = template(data);
 
                 const browser = await puppeteer.launch({
-                    executablePath: '/opt/homebrew/bin/chromium',
+                    // executablePath: '/opt/homebrew/bin/chromium',
                     args: ['--no-sandbox', '--disable-setuid-sandbox'],
                 });
 
@@ -243,6 +245,7 @@ mid1Router.route('/')
 
 // Helper Functions
 function validateQuestions(questions) {
+    console.log('subject based questions: ', questions)
     const requirements = {
         mcq: { min: 20, name: "MCQ" },
         easy: { min: 8, name: "Easy" },
@@ -251,6 +254,7 @@ function validateQuestions(questions) {
     };
 
     for (const [type, req] of Object.entries(requirements)) {
+        console.log(type, questions[type]);
         const count = countQuestionsInUnits(questions[type]);
         if (count < req.min) {
             return {
@@ -263,6 +267,7 @@ function validateQuestions(questions) {
 }
 
 function countQuestionsInUnits(questionType) {
+    console.log(questionType);
     if (!questionType) return 0;
     return ['u1', 'u2', 'u3'].reduce((total, unit) => {
         return total + (questionType[unit]?.length || 0);

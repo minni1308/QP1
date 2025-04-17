@@ -13,6 +13,7 @@ const readFile = utils.promisify(fs.readFile);
 
 const random = require('random');
 var seedrandom = require('seedrandom');
+const { ObjectID } = require('mongodb');
 random.use(seedrandom('qpgenerator'));
 
 // Define mark distribution (Total 100 marks)
@@ -37,7 +38,8 @@ semRouter.route('/')
             console.log("Received request for paper generation");
             console.log("Subject ID:", req.body.id);
 
-            const questions = await question.findById(req.body.id);
+            const subjectId = ObjectID(req.body.id);
+            const questions = await question.findOne({subject: subjectId});
             if (!questions) {
                 console.log("No questions found for ID:", req.body.id);
                 return response.status(404).send('Questions not found');
@@ -164,7 +166,7 @@ semRouter.route('/')
                 const html = template(data);
 
                 const browser = await puppeteer.launch({
-                    executablePath: '/opt/homebrew/bin/chromium',
+                    // executablePath: '/opt/homebrew/bin/chromium',
                     args: ['--no-sandbox', '--disable-setuid-sandbox'],
                 });
 

@@ -14,6 +14,7 @@ const readFile = utils.promisify(fs.readFile);
 
 const random = require('random');
 var seedrandom = require('seedrandom');
+const { ObjectId } = require('mongodb');
 random.use(seedrandom('qpgenerator'));
 
 
@@ -97,7 +98,8 @@ schemaRouter.route('/')
             }
         }
         async function generatePdf() {
-            const questions = await question.findById(req.body.id);
+            const subjectId = ObjectId(req.body.id)
+            const questions = await question.findOne({subject: subjectId});
             if (!questions) {
                 console.log("No questions found for ID:", req.body.id);
                 return response.status(404).send('Questions not found');
