@@ -43,16 +43,21 @@ function RemoveTeacherSubjects() {
     const fetchTeachers = async () => {
         setLoading(true);
         try {
-            const response = await fetch(baseUrl + 'admin/teachers', {
+            console.log('Fetching teachers from:', baseUrl + '/admin/teachers');
+            const response = await fetch(baseUrl + '/admin/teachers', {
                 method: 'GET',
                 headers: getAuthHeaders()
             });
 
             if (!response.ok) {
+                const errorText = await response.text();
+                console.error('Server response:', errorText);
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
             const data = await response.json();
+            console.log('Teachers data received:', data);
+            
             if (data.success) {
                 // Filter out admin users and ensure required fields exist
                 const validTeachers = data.list.filter(teacher => 
@@ -60,12 +65,17 @@ function RemoveTeacherSubjects() {
                     (teacher.name || teacher.username) && 
                     teacher._id
                 );
+                console.log('Filtered teachers:', validTeachers);
                 setTeachers(validTeachers);
             } else {
                 throw new Error(data.message || 'Failed to fetch teachers');
             }
         } catch (error) {
             console.error('Error fetching teachers:', error);
+            console.error('Error details:', {
+                message: error.message,
+                stack: error.stack
+            });
             setAlert({
                 show: true,
                 type: 'error',
@@ -81,7 +91,7 @@ function RemoveTeacherSubjects() {
 
         setLoading(true);
         try {
-            const response = await fetch(baseUrl + 'admin/teachersubjects/remove', {
+            const response = await fetch(baseUrl + '/admin/teachersubjects/remove', {
                 method: 'DELETE',
                 headers: {
                     ...getAuthHeaders(),

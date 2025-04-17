@@ -86,12 +86,21 @@ export const removeSubject = (code) =>
     body: JSON.stringify(code),
   });
 
-export const getSubjects = (details) =>
-  fetch(`${baseUrl}/admin/subject/get`, {
+export const getSubjects = (details) => {
+  // If no filters provided, get all subjects
+  if (!details.name && !details.year && !details.sem && !details.code) {
+    return fetch(`${baseUrl}/admin/subject/all`, {
+      method: "GET",
+      headers: getAuthHeaders(),
+    });
+  }
+  // Otherwise use the filtered search
+  return fetch(`${baseUrl}/admin/subject/get`, {
     method: "POST",
     headers: getAuthHeaders(),
     body: JSON.stringify(details),
   });
+};
 
 // ✅ Profile
 export const getProfile = () =>

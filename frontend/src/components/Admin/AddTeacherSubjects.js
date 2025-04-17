@@ -41,7 +41,7 @@ function AddTeacherSubjects() {
     const fetchTeachers = async () => {
         try {
             console.log('Fetching teachers...');
-            const response = await fetch(baseUrl + 'admin/teachers', {
+            const response = await fetch(baseUrl + '/admin/teachers', {
                 method: 'GET',
                 headers: getAuthHeaders()
             });
@@ -81,7 +81,7 @@ function AddTeacherSubjects() {
     const fetchSubjects = async () => {
         try {
             console.log('Fetching subjects with token:', localStorage.get('token'));
-            const response = await fetch(baseUrl + 'admin/subject/all', {
+            const response = await fetch(baseUrl + '/admin/subject/all', {
                 method: 'GET',
                 headers: getAuthHeaders()
             });
@@ -117,7 +117,7 @@ function AddTeacherSubjects() {
 
         setLoading(true);
         try {
-            const response = await fetch(baseUrl + 'admin/teachersubjects/add', {
+            const response = await fetch(baseUrl + '/admin/teachersubjects/add', {
                 method: 'POST',
                 headers: getAuthHeaders(),
                 body: JSON.stringify({

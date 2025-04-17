@@ -137,36 +137,53 @@ const Subject = () => {
   };
 
   const listSubjects = async (e) => {
-    e.preventDefault();
-
-    if (!ldept && !lyear && !lcode) {
-      alert('Please enter Department + Year + Semester or Subject Code');
-      return;
-    }
+    e.preventDefault(); // Prevent form submission refresh
 
     setIsLoading(true);
     try {
+      // Only make the API call if either a subject code or all three filters are provided
+      const hasAllFilters = ldept?.value && lyear?.value && lsem?.value;
+      const hasCode = lcode;
+
+      if (!hasAllFilters && !hasCode) {
+        // If no filters, get all subjects
+        console.log("Fetching all subjects...");
+      }
+
       const res = await getSubjects({
-        name: ldept?.value,
-        year: lyear?.value,
-        sem: lsem?.value,
-        code: lcode,
+        name: ldept?.value || '',
+        year: lyear?.value || '',
+        sem: lsem?.value || '',
+        code: lcode || '',
       });
+
       const result = await res.json();
+      console.log("Subjects response:", result);
+
       if (result.success) {
-        setSubjectList(result.list);
-        setLdept('');
-        setLyear('');
-        setLsem('');
-        setLcode('');
+        const formattedList = result.list.map(sub => ({
+          sname: sub.name || sub.sname,
+          scode: sub.code || sub.scode,
+          dname: sub.department?.value || sub.dname,
+          year: sub.department?.year || sub.year,
+          sem: sub.department?.semester || sub.sem
+        }));
+        setSubjectList(formattedList);
+
+        // Only clear filters if the request was successful
+        if (result.success) {
+          setLdept('');
+          setLyear('');
+          setLsem('');
+          setLcode('');
+        }
       } else {
         alert('No matching subjects found');
         setSubjectList([]);
       }
-    } catch {
-      alert('Please Login and Logout');
-      localStorage.clear();
-      window.location.reload();
+    } catch (error) {
+      console.error('Error listing subjects:', error);
+      alert('Error fetching subjects. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -281,7 +298,11 @@ const Subject = () => {
                 <Select
                   options={departmentList}
                   value={ldept}
-                  onChange={setLdept}
+                  onChange={(value) => {
+                    setLdept(value);
+                    // Clear code when using filters
+                    setLcode('');
+                  }}
                   placeholder="Select Department"
                   onMenuOpen={() => setLdept('')}
                 />
@@ -293,7 +314,11 @@ const Subject = () => {
                 <Select
                   options={years}
                   value={lyear}
-                  onChange={setLyear}
+                  onChange={(value) => {
+                    setLyear(value);
+                    // Clear code when using filters
+                    setLcode('');
+                  }}
                   placeholder="Select Year"
                   onMenuOpen={() => setLyear('')}
                 />
@@ -305,7 +330,11 @@ const Subject = () => {
                 <Select
                   options={semesters}
                   value={lsem}
-                  onChange={setLsem}
+                  onChange={(value) => {
+                    setLsem(value);
+                    // Clear code when using filters
+                    setLcode('');
+                  }}
                   placeholder="Select Semester"
                   onMenuOpen={() => setLsem('')}
                 />
@@ -320,38 +349,51 @@ const Subject = () => {
               name="scode"
               placeholder="Subject Code"
               value={lcode}
-              onChange={(e) => setLcode(e.target.value)}
+              onChange={(e) => {
+                setLcode(e.target.value);
+                // Clear filters when using code
+                setLdept('');
+                setLyear('');
+                setLsem('');
+              }}
             />
             <FormText>Eg: A21AB</FormText>
           </FormGroup>
-          <Button color="info" type="submit" style={{ marginLeft: '40%' }}>
+          <Button 
+            color="info" 
+            type="submit" 
+            style={{ marginLeft: '40%' }}
+            onClick={listSubjects}
+          >
             Submit
           </Button>
         </Form>
-        <Table hover>
-          <thead>
-            <tr>
-              <th>S.No</th>
-              <th>Name</th>
-              <th>Code</th>
-              <th>Department</th>
-              <th>Year</th>
-              <th>Semester</th>
-            </tr>
-          </thead>
-          <tbody>
-            {subjectList.map((ele, ind) => (
-              <tr key={ind}>
-                <th>{ind + 1}</th>
-                <td>{ele.sname}</td>
-                <td>{ele.scode}</td>
-                <td>{ele.dname}</td>
-                <td>{ele.year}</td>
-                <td>{ele.sem}</td>
+        {subjectList.length > 0 && (
+          <Table hover style={{ marginTop: '20px' }}>
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Name</th>
+                <th>Code</th>
+                <th>Department</th>
+                <th>Year</th>
+                <th>Semester</th>
               </tr>
-            ))}
-          </tbody>
-        </Table>
+            </thead>
+            <tbody>
+              {subjectList.map((ele, ind) => (
+                <tr key={ind}>
+                  <th>{ind + 1}</th>
+                  <td>{ele.sname}</td>
+                  <td>{ele.scode}</td>
+                  <td>{ele.dname}</td>
+                  <td>{ele.year}</td>
+                  <td>{ele.sem}</td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        )}
       </UncontrolledCollapse>
     </div>
   );
