@@ -213,23 +213,78 @@ function validateQuestions(questions, teacherId) {
         mcq: { min: 20, name: "MCQ" },
         easy: { min: 8, name: "Easy" },
         medium: { min: 5, name: "Medium" },
-        hard: { min: 4, name: "Hard" }  // Increased minimum for hard questions
+        hard: { min: 4, name: "Hard" }
     };
 
-    for (const unit of units) {
+    // Count total questions for each type
+    const totalCounts = {
+        mcq: 0,
+        easy: 0,
+        medium: 0,
+        hard: 0
+    };
+
+    // Count questions per unit
+    const unitCounts = {};
+    units.forEach(unit => {
+        unitCounts[unit] = {
+            mcq: 0,
+            easy: 0,
+            medium: 0,
+            hard: 0
+        };
+    });
+
+    // Calculate actual counts and log details
+    console.log("\n=== Question Counts for Teacher ID:", teacherId, "===");
+    units.forEach(unit => {
+        console.log(`\nUnit ${unit}:`);
         for (const [type, req] of Object.entries(requirements)) {
             const teacherQuestions = questions[type]?.[unit]?.filter(q => 
                 q.teacher && q.teacher.equals(teacherId)
             ) || [];
             const count = teacherQuestions.length;
-            if (count < req.min / units.length) {
-                return {
-                    isValid: false,
-                    message: `You need at least ${Math.ceil(req.min / units.length)} ${req.name} questions in unit ${unit}, but you only have ${count} questions added by you`
-                };
-            }
+            totalCounts[type] += count;
+            unitCounts[unit][type] = count;
+            
+            // Log question details
+            console.log(`${type.toUpperCase()} questions (${count}):`);
+            teacherQuestions.forEach((q, index) => {
+                console.log(`  ${index + 1}. ${q.name}`);
+            });
+        }
+    });
+
+    // Log summary
+    console.log("\n=== Summary ===");
+    for (const [type, req] of Object.entries(requirements)) {
+        console.log(`${type.toUpperCase()}:`);
+        console.log(`  Required: ${req.min}`);
+        console.log(`  Available: ${totalCounts[type]}`);
+        console.log(`  Per Unit:`);
+        units.forEach(unit => {
+            console.log(`    ${unit}: ${unitCounts[unit][type]}`);
+        });
+    }
+
+    // Check if requirements are met
+    for (const [type, req] of Object.entries(requirements)) {
+        if (totalCounts[type] < req.min) {
+            return {
+                isValid: false,
+                message: `You need at least ${req.min} ${req.name} questions in total across units u3, u4, and u5, but you only have ${totalCounts[type]} questions added by you.`,
+                details: {
+                    required: req.min,
+                    available: totalCounts[type],
+                    perUnit: units.map(unit => ({
+                        unit,
+                        count: unitCounts[unit][type]
+                    }))
+                }
+            };
         }
     }
+
     return { isValid: true };
 }
 
