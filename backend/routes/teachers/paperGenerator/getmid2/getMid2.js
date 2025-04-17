@@ -50,7 +50,7 @@ mid2Router.route('/')
             }
 
             // Validate question counts
-            const validation = validateQuestions(questions);
+            const validation = validateQuestions(questions, req.user._id);
             if (!validation.isValid) {
                 return response.status(403).json({
                     error: "Insufficient questions",
@@ -76,7 +76,7 @@ mid2Router.route('/')
 
             try {
                 // Select questions from units u3, u4, u5
-                const selectedQuestions = selectQuestionsFromUnits(questions, ['u3', 'u4', 'u5']);
+                const selectedQuestions = selectQuestionsFromUnits(questions, ['u3', 'u4', 'u5'], req.user._id);
                 data.questions = formatQuestionsForTemplate(selectedQuestions);
 
                 // Generate PDF
@@ -207,7 +207,7 @@ mid2Router.route('/')
         }
     });
 
-function validateQuestions(questions) {
+function validateQuestions(questions, teacherId) {
     const units = ['u3', 'u4', 'u5'];
     const requirements = {
         mcq: { min: 20, name: "MCQ" },
@@ -218,11 +218,14 @@ function validateQuestions(questions) {
 
     for (const unit of units) {
         for (const [type, req] of Object.entries(requirements)) {
-            const count = questions[type]?.[unit]?.length || 0;
+            const teacherQuestions = questions[type]?.[unit]?.filter(q => 
+                q.teacher && q.teacher.equals(teacherId)
+            ) || [];
+            const count = teacherQuestions.length;
             if (count < req.min / units.length) {
                 return {
                     isValid: false,
-                    message: `Insufficient ${req.name} questions in unit ${unit}. Need at least ${Math.ceil(req.min / units.length)}, found ${count}`
+                    message: `You need at least ${Math.ceil(req.min / units.length)} ${req.name} questions in unit ${unit}, but you only have ${count} questions added by you`
                 };
             }
         }
@@ -230,7 +233,7 @@ function validateQuestions(questions) {
     return { isValid: true };
 }
 
-function selectQuestionsFromUnits(questions, units) {
+function selectQuestionsFromUnits(questions, units, teacherId) {
     const selected = {
         mcq: [],
         easy: [],
@@ -249,7 +252,7 @@ function selectQuestionsFromUnits(questions, units) {
         return Array.from(selected);
     };
 
-    // Collect all questions from specified units
+    // Collect all questions from specified units for the specific teacher
     const questionPool = {
         mcq: [],
         easy: [],
@@ -260,7 +263,10 @@ function selectQuestionsFromUnits(questions, units) {
     units.forEach(unit => {
         ['mcq', 'easy', 'medium', 'hard'].forEach(type => {
             if (questions[type]?.[unit]) {
-                questionPool[type].push(...questions[type][unit]);
+                const teacherQuestions = questions[type][unit].filter(q => 
+                    q.teacher && q.teacher.equals(teacherId)
+                );
+                questionPool[type].push(...teacherQuestions);
             }
         });
     });

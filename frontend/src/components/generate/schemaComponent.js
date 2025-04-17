@@ -57,10 +57,24 @@ const Schema = () => {
     if (subjects.length === 0) {
       setIsLoading(true);
       const user = localStorage.get('user');
+      
+      // If no user in localStorage, redirect to login
+      if (!user) {
+        localStorage.clear();
+        window.location.href = '/';
+        return;
+      }
+
       fetch(`${baseUrl}/admin/teachersubjects/${user.id}`, {
         headers: getAuthHeaders()
       })
       .then(res => {
+        if (res.status === 401) {
+          // Session expired
+          localStorage.clear();
+          window.location.href = '/';
+          throw new Error('Session expired');
+        }
         if (!res.ok) {
           throw new Error('Failed to fetch teacher subjects');
         }
@@ -74,7 +88,7 @@ const Schema = () => {
         }
 
         const opts = data.subjects
-          .filter(subj => subj && subj.name && subj.code) // Filter out invalid subjects
+          .filter(subj => subj && subj.name && subj.code)
           .map((subj) => ({
             label: subj.name,            
             value: subj.code,
@@ -93,8 +107,14 @@ const Schema = () => {
         setIsLoading(false);
       })
       .catch((err) => {
-        alert("Cannot Connect to Server!!!, Logging Out...");
-        console.log(err)
+        console.log(err);
+        if (err.message === 'Session expired') {
+          // Already handled above
+          return;
+        }
+        alert("Cannot connect to server. Please try again later.");
+        localStorage.clear();
+        window.location.href = '/';
       });
     }
   }, [subjects.length]);
@@ -197,8 +217,21 @@ const Schema = () => {
       const timestamp = new Date();
       const fileName = `${details.value}_${timestamp.getHours()}_${timestamp.getMinutes()}.pdf`;
       saveAs(blob, fileName);
-    } catch {
-      alert("Cannot Generate Paper, not enough Questions in Subject");
+    } catch (error) {
+      if (error.response) {
+        if (error.response.status === 401) {
+          localStorage.clear();
+          window.location.href = '/';
+        } else if (error.response.status === 403) {
+          alert("Cannot Generate Paper: Not enough questions in the subject");
+        } else {
+          alert(`Error generating paper: ${error.response.status} ${error.response.statusText}`);
+        }
+      } else if (error.request) {
+        alert("No response from server. Please check your connection.");
+      } else {
+        alert(`Error: ${error.message}`);
+      }
     } finally {
       setIsLoading(false);
       resetForm();
@@ -219,8 +252,21 @@ const Schema = () => {
       const timestamp = new Date();
       const fileName = `${details.value}_${timestamp.getHours()}_${timestamp.getMinutes()}.pdf`;
       saveAs(blob, fileName);
-    } catch {
-      alert("Cannot Generate Paper, not enough Questions in Subject");
+    } catch (error) {
+      if (error.response) {
+        if (error.response.status === 401) {
+          localStorage.clear();
+          window.location.href = '/';
+        } else if (error.response.status === 403) {
+          alert("Cannot Generate Paper: Not enough questions in the subject");
+        } else {
+          alert(`Error generating paper: ${error.response.status} ${error.response.statusText}`);
+        }
+      } else if (error.request) {
+        alert("No response from server. Please check your connection.");
+      } else {
+        alert(`Error: ${error.message}`);
+      }
     } finally {
       setIsLoading(false);
       resetForm();
@@ -241,8 +287,21 @@ const Schema = () => {
       const timestamp = new Date();
       const fileName = `${details.value}_${timestamp.getHours()}_${timestamp.getMinutes()}.pdf`;
       saveAs(blob, fileName);
-    } catch {
-      alert("Cannot Generate Paper, not enough Questions in Subject");
+    } catch (error) {
+      if (error.response) {
+        if (error.response.status === 401) {
+          localStorage.clear();
+          window.location.href = '/';
+        } else if (error.response.status === 403) {
+          alert("Cannot Generate Paper: Not enough questions in the subject");
+        } else {
+          alert(`Error generating paper: ${error.response.status} ${error.response.statusText}`);
+        }
+      } else if (error.request) {
+        alert("No response from server. Please check your connection.");
+      } else {
+        alert(`Error: ${error.message}`);
+      }
     } finally {
       setIsLoading(false);
     }

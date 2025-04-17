@@ -49,7 +49,7 @@ mid1Router.route('/')
             }
 
             // Validate question counts
-            const validation = validateQuestions(questions);
+            const validation = validateQuestions(questions, req.user._id);
             if (!validation.isValid) {
                 return response.status(403).json({
                     error: "Insufficient questions",
@@ -79,16 +79,16 @@ mid1Router.route('/')
             // Select questions for each category
             try {
                 // Select MCQs (15 questions, 1 mark each)
-                data.questions.mcq = selectMCQs(questions.mcq, markDistribution.mcq.count);
+                data.questions.mcq = selectMCQs(questions.mcq, markDistribution.mcq.count, req.user._id);
 
                 // Select Easy questions (6 questions, 5 marks each)
-                const easyQuestions = selectQuestions(questions.easy, markDistribution.easy.count);
+                const easyQuestions = selectQuestions(questions.easy, markDistribution.easy.count, req.user._id);
                 
                 // Select Medium questions (3 questions, 7 marks each)
-                const mediumQuestions = selectQuestions(questions.medium, markDistribution.medium.count);
+                const mediumQuestions = selectQuestions(questions.medium, markDistribution.medium.count, req.user._id);
                 
                 // Select Hard question (1 question, 9 marks)
-                const hardQuestions = selectQuestions(questions.hard, markDistribution.hard.count);
+                const hardQuestions = selectQuestions(questions.hard, markDistribution.hard.count, req.user._id);
 
                 // Combine descriptive questions
                 data.questions.descriptive = [
@@ -244,7 +244,7 @@ mid1Router.route('/')
     });
 
 // Helper Functions
-function validateQuestions(questions) {
+function validateQuestions(questions, teacherId) {
     console.log('subject based questions: ', questions)
     const requirements = {
         mcq: { min: 20, name: "MCQ" },
@@ -255,30 +255,37 @@ function validateQuestions(questions) {
 
     for (const [type, req] of Object.entries(requirements)) {
         console.log(type, questions[type]);
-        const count = countQuestionsInUnits(questions[type]);
+        const count = countQuestionsInUnits(questions[type], teacherId);
         if (count < req.min) {
             return {
                 isValid: false,
-                message: `Insufficient ${req.name} questions. Need at least ${req.min}, found ${count}`
+                message: `You need at least ${req.min} ${req.name} questions, but you only have ${count} questions added by you`
             };
         }
     }
     return { isValid: true };
 }
 
-function countQuestionsInUnits(questionType) {
+function countQuestionsInUnits(questionType, teacherId) {
     console.log(questionType);
     if (!questionType) return 0;
     return ['u1', 'u2', 'u3'].reduce((total, unit) => {
-        return total + (questionType[unit]?.length || 0);
+        if (!questionType[unit]) return total;
+        const teacherQuestions = questionType[unit].filter(q => 
+            q.teacher && q.teacher.equals(teacherId)
+        );
+        return total + teacherQuestions.length;
     }, 0);
 }
 
-function selectMCQs(mcqPool, count) {
+function selectMCQs(mcqPool, count, teacherId) {
     const allMCQs = [];
     ['u1', 'u2', 'u3'].forEach(unit => {
         if (mcqPool?.[unit]) {
-            allMCQs.push(...mcqPool[unit]);
+            const teacherMCQs = mcqPool[unit].filter(q => 
+                q.teacher && q.teacher.equals(teacherId)
+            );
+            allMCQs.push(...teacherMCQs);
         }
     });
 
@@ -294,11 +301,14 @@ function selectMCQs(mcqPool, count) {
     return Array.from(selected).map(index => allMCQs[index]);
 }
 
-function selectQuestions(questionPool, count) {
+function selectQuestions(questionPool, count, teacherId) {
     const allQuestions = [];
     ['u1', 'u2', 'u3'].forEach(unit => {
         if (questionPool?.[unit]) {
-            allQuestions.push(...questionPool[unit]);
+            const teacherQuestions = questionPool[unit].filter(q => 
+                q.teacher && q.teacher.equals(teacherId)
+            );
+            allQuestions.push(...teacherQuestions);
         }
     });
 

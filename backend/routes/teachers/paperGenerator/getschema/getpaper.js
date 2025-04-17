@@ -35,38 +35,40 @@ schemaRouter.route('/:uid')
     .get(cors.corsWithOptions, authenticate.verifyUser, (req, res, next) => {
         question.findById(req.params.uid)
             .then((questions) => {
-                var lens = {
+                // Count questions for the logged-in teacher
+                const teacherId = req.user._id;
+                const lens = {
                     mcq: {
-                        u1: questions['mcq']['u1'].length,
-                        u2: questions['mcq']['u2'].length,
-                        u3: questions['mcq']['u3'].length,
-                        u4: questions['mcq']['u4'].length,
-                        u5: questions['mcq']['u5'].length,
+                        u1: questions['mcq']['u1'].filter(q => q.teacher && q.teacher.equals(teacherId)).length,
+                        u2: questions['mcq']['u2'].filter(q => q.teacher && q.teacher.equals(teacherId)).length,
+                        u3: questions['mcq']['u3'].filter(q => q.teacher && q.teacher.equals(teacherId)).length,
+                        u4: questions['mcq']['u4'].filter(q => q.teacher && q.teacher.equals(teacherId)).length,
+                        u5: questions['mcq']['u5'].filter(q => q.teacher && q.teacher.equals(teacherId)).length,
                     },
                     easy: {
-                        u1: questions['easy']['u1'].length,
-                        u2: questions['easy']['u2'].length,
-                        u3: questions['easy']['u3'].length,
-                        u4: questions['easy']['u4'].length,
-                        u5: questions['easy']['u5'].length,
+                        u1: questions['easy']['u1'].filter(q => q.teacher && q.teacher.equals(teacherId)).length,
+                        u2: questions['easy']['u2'].filter(q => q.teacher && q.teacher.equals(teacherId)).length,
+                        u3: questions['easy']['u3'].filter(q => q.teacher && q.teacher.equals(teacherId)).length,
+                        u4: questions['easy']['u4'].filter(q => q.teacher && q.teacher.equals(teacherId)).length,
+                        u5: questions['easy']['u5'].filter(q => q.teacher && q.teacher.equals(teacherId)).length,
                     },
                     medium: {
-                        u1: questions['medium']['u1'].length,
-                        u2: questions['medium']['u2'].length,
-                        u3: questions['medium']['u3'].length,
-                        u4: questions['medium']['u4'].length,
-                        u5: questions['medium']['u5'].length,
+                        u1: questions['medium']['u1'].filter(q => q.teacher && q.teacher.equals(teacherId)).length,
+                        u2: questions['medium']['u2'].filter(q => q.teacher && q.teacher.equals(teacherId)).length,
+                        u3: questions['medium']['u3'].filter(q => q.teacher && q.teacher.equals(teacherId)).length,
+                        u4: questions['medium']['u4'].filter(q => q.teacher && q.teacher.equals(teacherId)).length,
+                        u5: questions['medium']['u5'].filter(q => q.teacher && q.teacher.equals(teacherId)).length,
                     },
                     hard: {
-                        u1: questions['hard']['u1'].length,
-                        u2: questions['hard']['u2'].length,
-                        u3: questions['hard']['u3'].length,
-                        u4: questions['hard']['u4'].length,
-                        u5: questions['hard']['u5'].length,
+                        u1: questions['hard']['u1'].filter(q => q.teacher && q.teacher.equals(teacherId)).length,
+                        u2: questions['hard']['u2'].filter(q => q.teacher && q.teacher.equals(teacherId)).length,
+                        u3: questions['hard']['u3'].filter(q => q.teacher && q.teacher.equals(teacherId)).length,
+                        u4: questions['hard']['u4'].filter(q => q.teacher && q.teacher.equals(teacherId)).length,
+                        u5: questions['hard']['u5'].filter(q => q.teacher && q.teacher.equals(teacherId)).length,
                     }
                 }
                 res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/pdf');
+                res.setHeader('Content-Type', 'application/json');
                 res.json({ sublens: lens });
             }).catch((err) => next(err));
     })
@@ -106,17 +108,37 @@ schemaRouter.route('/')
             }
 
             // Validate questions with detailed logging
-            const validation = validateQuestions(questions);
+            const validation = validateQuestions(questions, req.user._id);
             if (!validation.isValid) {
                 console.log("Validation failed:", validation.message);
                 return response.status(403).json({
                     error: "Insufficient questions",
                     details: validation.message,
                     questionCounts: {
-                        mcq: units.reduce((sum, unit) => sum + (questions.mcq?.[unit]?.length || 0), 0),
-                        easy: units.reduce((sum, unit) => sum + (questions.easy?.[unit]?.length || 0), 0),
-                        medium: units.reduce((sum, unit) => sum + (questions.medium?.[unit]?.length || 0), 0),
-                        hard: units.reduce((sum, unit) => sum + (questions.hard?.[unit]?.length || 0), 0)
+                        mcq: units.reduce((sum, unit) => {
+                            const teacherQuestions = questions.mcq?.[unit]?.filter(q => 
+                                q.teacher && q.teacher.equals(req.user._id)
+                            ) || [];
+                            return sum + teacherQuestions.length;
+                        }, 0),
+                        easy: units.reduce((sum, unit) => {
+                            const teacherQuestions = questions.easy?.[unit]?.filter(q => 
+                                q.teacher && q.teacher.equals(req.user._id)
+                            ) || [];
+                            return sum + teacherQuestions.length;
+                        }, 0),
+                        medium: units.reduce((sum, unit) => {
+                            const teacherQuestions = questions.medium?.[unit]?.filter(q => 
+                                q.teacher && q.teacher.equals(req.user._id)
+                            ) || [];
+                            return sum + teacherQuestions.length;
+                        }, 0),
+                        hard: units.reduce((sum, unit) => {
+                            const teacherQuestions = questions.hard?.[unit]?.filter(q => 
+                                q.teacher && q.teacher.equals(req.user._id)
+                            ) || [];
+                            return sum + teacherQuestions.length;
+                        }, 0)
                     }
                 });
             }
@@ -151,14 +173,18 @@ schemaRouter.route('/')
                 for (var j = 0; j < units.length; j++) {
                     if (data.details[i][units[j]] !== '') { // checking for each unit
                         var num = Number(data.details[i][units[j]]); // no of questions required for each unit
-                        var range = questions[data.details[i]['type']][units[j]].length;  // if 10 questions gives 10
+                        // Filter questions for the logged-in teacher
+                        const teacherQuestions = questions[data.details[i]['type']][units[j]].filter(q => 
+                            q.teacher && q.teacher.equals(req.user._id)
+                        );
+                        var range = teacherQuestions.length;  // if 10 questions gives 10
                         const ints = random.uniformInt(0, range - 1); // gives a number from 0 - 9 inclusive
                         if (range in s) {
                             var arr = s[range];
                             var len = arr.length;
                             var startIndex = ints()
                             while (num > 0) {
-                                const targetQuestion = questions[data.details[i]['type']][units[j]][arr[startIndex]]
+                                const targetQuestion = teacherQuestions[arr[startIndex]]
                                 if(data.details[i]['type']=='mcq')
                                     data.details[i]['questions'].push({
                                         text: targetQuestion.name || '',
@@ -186,7 +212,7 @@ schemaRouter.route('/')
                             var startIndex = ints();  // [0 - range-1] inclusive the index number lies in shuffled array. 
                             
                             while (num > 0) {
-                                const targetQuestion = questions[data.details[i]['type']][units[j]][arr[startIndex]]
+                                const targetQuestion = teacherQuestions[arr[startIndex]]
                                 if(data.details[i]['type']=='mcq')
                                     data.details[i]['questions'].push({
                                         text: targetQuestion.name || '',
@@ -335,7 +361,7 @@ schemaRouter.route('/')
         res.end('DELETE Operation is not Performed');
     })
 
-function validateQuestions(questions) {
+function validateQuestions(questions, teacherId) {
     console.log("Starting validation...");
     
     // Count total available questions
