@@ -13,7 +13,7 @@ function App() {
 
     const THIRTY_MINUTES = 30 * 60 * 1000;
 
-    if (sessionStart && now - parseInt(sessionStart) > THIRTY_MINUTES) {
+    if (sessionStart===null || sessionStart===undefined || now - parseInt(sessionStart) > THIRTY_MINUTES) {
       // Session expired – clear data
       localStorage.clear(); // or remove specific keys
       localStorage.setItem("sessionStartTime", now.toString()); // reset timestamp

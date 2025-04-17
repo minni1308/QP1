@@ -56,8 +56,8 @@ const Options = () => {
         .catch(() => {
           setIsLoading(false);
           alert("Cannot Connect to Server!!!!, Logging out.....");
-          localStorage.clear();
-          window.location.reload();
+          // localStorage.clear();
+          // window.location.reload();
         });
     }
   }, []);

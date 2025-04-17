@@ -82,7 +82,7 @@ semRouter.route('/')
                 time: req.body.hours,
                 questions: []
             };
-            console.log('present data', data);
+
             try {
                 // Select questions from all units with balanced distribution
                 const selectedQuestions = selectQuestionsFromUnits(questions, units);

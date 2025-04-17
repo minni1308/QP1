@@ -10,13 +10,10 @@ import {
   Card,
   CardBody,
   Input,
-  InputGroup,
-  InputGroupAddon,
-  InputGroupText,
 } from "reactstrap";
 import Select from "react-select";
 import Custome from "./customeComponent";
-import { getSubjectDetails } from "../ActionCreators";
+import { getAuthHeaders } from "../ActionCreators";
 import DatePicker from "react-datepicker";
 import { WaveTopBottomLoading } from "react-loadingg";
 import localStorage from "local-storage";
@@ -58,25 +55,62 @@ const Schema = () => {
 
   useEffect(() => {
     if (subjects.length === 0) {
-      getSubjectDetails()
-        .then((res) => res.json())
-        .then((res) => {
-          const formatted = res.map((el) => ({
-            label: el.subject.name,
-            value: el.subject.code,
-            id: el._id,
-            deptYear: el.subject.department.year,
-            deptSem: el.subject.department.semester,
+      setIsLoading(true);
+
+      // getSubjectDetails()
+      //   .then((res) => res.json())
+      //   .then((res) => {
+      //     const formatted = res.map((el) => ({
+      //       label: el.subject.name,
+      //       value: el.subject.code,
+      //       id: el._id,
+      //       deptYear: el.subject.department.year,
+      //       deptSem: el.subject.department.semester,
+      //     }));
+      //     setSubjects(formatted);
+      //   })
+      const user = localStorage.get('user');
+      fetch(`${baseUrl}/admin/teachersubjects/${user.id}`, {
+        headers: getAuthHeaders()
+      })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Failed to fetch teacher subjects');
+        }
+        return res.json();
+      })
+      .then(data => {
+        if (!data.success || !Array.isArray(data.subjects)) {
+          console.warn('No subjects found or invalid response format');
+          setSubjects([]);
+          return;
+        }
+
+        const opts = data.subjects
+          .filter(subj => subj && subj.name && subj.code) // Filter out invalid subjects
+          .map((subj) => ({
+            label: subj.name,            
+            value: subj.code,
+            id: subj._id,
+            deptYear: subj.department.year,
+            deptSem: subj.department.semester,
           }));
-          setSubjects(formatted);
-        })
-        .catch(() => {
-          alert("Cannot Connect to Server!!!, Logging Out...");
-          localStorage.clear();
-          window.location.reload();
-        });
+        
+        if (opts.length === 0) {
+          console.warn('No subjects assigned to this teacher');
+        } else {
+          console.log('Loaded subjects:', opts);
+        }
+        
+        setSubjects(opts);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        alert("Cannot Connect to Server!!!, Logging Out...");
+        console.log(err)
+      });
     }
-  }, []);
+  }, [subjects.length]);
 
   const handleSubjectChange = (e) => setSelectedSubject(e);
   const handleTypeChange = (e) => {

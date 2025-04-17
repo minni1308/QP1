@@ -26,9 +26,9 @@ export const postQuestion = (question) =>
     body: JSON.stringify(question),
   });
 
-export const getSubjectDetails = () =>
-  fetch(`${baseUrl}/teacher/question/get`, {
-    headers: getAuthHeaders()
+export const getSubjectDetails = (id) =>
+  fetch(`${baseUrl}/teacher/question/get/${id}`, {
+    headers: getAuthHeaders(),
   });
 
 export const getQuestions = (details, difficulty) =>

@@ -21,6 +21,7 @@ import { WaveTopBottomLoading } from "react-loadingg";
 import localStorage from "local-storage";
 import DatePicker from "react-datepicker";
 import { baseUrl } from "../../url";
+import { getAuthHeaders, getSubjectDetails } from '../ActionCreators';
 
 const Custome = ({ subject, handleSchema }) => {
   const [mcq, setMcq] = useState({ u1: false, u2: false, u3: false, u4: false, u5: false });
@@ -61,20 +62,23 @@ const Custome = ({ subject, handleSchema }) => {
   useEffect(() => {
     const getLengths = async () => {
       setIsloading(true);
-      const bearer = "Bearer " + localStorage.get("token");
+      // const bearer = "Bearer " + localStorage.get("token");
       try {
-        const res = await fetch(baseUrl + "/teacher/schema/" + subject.id, {
-          headers: { Authorization: bearer },
+        console.log(subject.id)
+        const questions = await getSubjectDetails(subject.id)
+        const data = await questions.json()
+        const subjectQuestionsID = data[0]._id
+        const res = await fetch(baseUrl + "/teacher/schema/" + subjectQuestionsID, {
+          headers: getAuthHeaders(),
         });
-        const data = await res.json();
-        console.log("Fetched sublens:", data.sublens);
-        setSublens(data.sublens);
+        const questionLengths = await res.json()
+        // console.log("Fetched sublens:", questionLengths.sublens);
+        setSublens(questionLengths.sublens);
         setIsloading(false);
       } catch (err) {
+        console.log(err);
         setIsloading(false);
         alert("Cannot Connect to Server!!!, Logging Out...");
-        localStorage.clear();
-        window.location.reload();
       }
     };
 

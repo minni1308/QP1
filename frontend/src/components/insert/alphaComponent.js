@@ -49,7 +49,7 @@ const Alpha = () => {
       const user = localStorage.get('user');
       
       // Fetch teacher's assigned subjects
-      fetch(`${baseUrl}admin/teachersubjects/${user.id}`, {
+      fetch(`${baseUrl}/admin/teachersubjects/${user.id}`, {
         headers: getAuthHeaders()
       })
       .then(res => {

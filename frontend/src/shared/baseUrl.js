@@ -1,1 +1,1 @@
-export const baseUrl = 'http://localhost:4200/';  // Backend server port 
+export const baseUrl = 'http://localhost:4200';  // Backend server port 

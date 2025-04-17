@@ -3,6 +3,7 @@ const questionRouter = express.Router();
 const question = require("../../models/questions");
 const authenticate = require("../../authenticate");
 const cors = require("../cors");
+const { MongoClient, ObjectID } = require("mongodb");
 
 questionRouter.use(express.json());
 
@@ -34,11 +35,17 @@ const mergeQuestions = (target, source) => {
 };
 
 questionRouter
-  .route("/get")
+  .route("/get/:id")
   .options(cors.corsWithOptions, (_, res) => res.sendStatus(200))
   .get(cors.corsWithOptions, authenticate.verifyUser, async (req, res, next) => {
     try {
-      const list = await question.find({}, { subject: 1 }).populate({
+      let subId = {}
+      if(req.params.id)
+        subId= {
+          subject: ObjectID(req.params.id)
+        }
+
+      const list = await question.find(subId, { subject: 1 }).populate({
         path: "subject",
         populate: { path: "department" },
       });

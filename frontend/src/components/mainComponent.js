@@ -83,7 +83,6 @@ const Main = () => {
         } />
         <Route path="/teacher/generate-questions" element={
           <PrivateRoute><GenerateQuestions /></PrivateRoute>
-          
         } />
 
         <Route path="/teacher/display-generated-questions" element={

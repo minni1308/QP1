@@ -10,7 +10,8 @@ import {
 } from "reactstrap";
 import { useNavigate } from "react-router-dom";
 import { baseUrl } from "../../url";
-import { fetchSubjects } from "../ActionCreators";
+import { fetchSubjects, getAuthHeaders } from "../ActionCreators";
+import localStorage from "local-storage";
 
 const GenerateQuestionsComponent = () => {
   const navigate = useNavigate();
@@ -34,24 +35,46 @@ const GenerateQuestionsComponent = () => {
   useEffect(() => {
     if (subjects.length === 0) {
       setIsLoading(true);
-      fetchSubjects()
-        .then((res) => res.json())
-        .then((subjectsData) => {
-          const subjectList = subjectsData.map((subj) => ({
+
+      // Fetch teacher's assigned subjects
+      const user = localStorage.get('user');
+      fetch(`${baseUrl}/admin/teachersubjects/${user.id}`, {
+        headers: getAuthHeaders()
+      })
+      .then(res => {
+        if (!res.ok) {
+          throw new Error('Failed to fetch teacher subjects');
+        }
+        return res.json();
+      })
+      .then(data => {
+        if (!data.success || !Array.isArray(data.subjects)) {
+          console.warn('No subjects found or invalid response format');
+          setSubjects([]);
+          return;
+        }
+
+        const opts = data.subjects
+          .filter(subj => subj && subj.name && subj.code) // Filter out invalid subjects
+          .map((subj) => ({
             id: subj._id,
             name: subj.name,
             code: subj.code,
             department: subj.department
           }));
-          setSubjects(subjectList);
-          setIsLoading(false);
-        })
-        .catch(() => {
-          setIsLoading(false);
-          setError("Cannot Connect to Server!");
-          window.localStorage.clear();
-          window.location.reload();
-        });
+        
+        if (opts.length === 0) {
+          console.warn('No subjects assigned to this teacher');
+        } else {
+          console.log('Loaded subjects:', opts);
+        }
+        
+        setSubjects(opts);
+        setIsLoading(false);
+      }).catch((err) => {
+        console.log(err);
+        alert('Please contact administratior');
+      })
     }
   }, [subjects.length]);
 
