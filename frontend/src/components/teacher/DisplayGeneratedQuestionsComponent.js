@@ -49,7 +49,12 @@ const DisplayGeneratedQuestionsComponent = () => {
   const [editingQuestion, setEditingQuestion] = useState({
     level: '',
     index: -1,
-    text: '',
+    text: ''
+  });
+  const [editedQuestions, setEditedQuestions] = useState({
+    easy: [...(questions.easy || [])],
+    medium: [...(questions.medium || [])],
+    hard: [...(questions.hard || [])]
   });
 
   useEffect(() => {
@@ -90,30 +95,19 @@ const DisplayGeneratedQuestionsComponent = () => {
     setEditingQuestion({
       level,
       index,
-      text: questions[level][index],
+      text: editedQuestions[level][index]
     });
     setEditModal(true);
   };
 
   const handleEditSave = () => {
-    if (!editingQuestion.text.trim()) {
-      setError("Question text cannot be empty");
-      return;
-    }
-
-    // Update the question in the questions state
-    const updatedQuestions = { ...questions };
-    updatedQuestions[editingQuestion.level][editingQuestion.index] = editingQuestion.text;
-    
-    // Update the location state
-    location.state.questions = updatedQuestions;
-    
-    setEditModal(false);
-    setEditingQuestion({
-      level: '',
-      index: -1,
-      text: '',
+    const { level, index, text } = editingQuestion;
+    setEditedQuestions(prev => {
+      const newQuestions = { ...prev };
+      newQuestions[level][index] = text;
+      return newQuestions;
     });
+    setEditModal(false);
   };
 
   const handleAddToDatabase = async () => {
@@ -134,7 +128,7 @@ const DisplayGeneratedQuestionsComponent = () => {
     const payload = {
       [id]: {
         easy: {
-          [chapterNumber]: questions.easy
+          [chapterNumber]: editedQuestions.easy
             .filter((_, index) => selectedQuestions.easy.has(index))
             .map(question => ({
               name: question,
@@ -142,7 +136,7 @@ const DisplayGeneratedQuestionsComponent = () => {
             })),
         },
         medium: {
-          [chapterNumber]: questions.medium
+          [chapterNumber]: editedQuestions.medium
             .filter((_, index) => selectedQuestions.medium.has(index))
             .map(question => ({
               name: question,
@@ -150,7 +144,7 @@ const DisplayGeneratedQuestionsComponent = () => {
             })),
         },
         hard: {
-          [chapterNumber]: questions.hard
+          [chapterNumber]: editedQuestions.hard
             .filter((_, index) => selectedQuestions.hard.has(index))
             .map(question => ({
               name: question,
@@ -232,14 +226,14 @@ const DisplayGeneratedQuestionsComponent = () => {
         </Button>
       </div>
 
-      {Object.keys(questions).map((level, index) => (
+      {Object.keys(editedQuestions).map((level, index) => (
         <Card key={index} className="mb-3">
           <CardHeader tag="h2" className="text-center">
             {level.toUpperCase()}
           </CardHeader>
           <CardBody>
             <FormGroup check className="me-3">
-              {questions[level].map((question, index) => (
+              {editedQuestions[level].map((question, index) => (
                 <div key={index} className="d-flex align-items-start mb-3">
                   <Input
                     type="checkbox"
@@ -279,15 +273,15 @@ const DisplayGeneratedQuestionsComponent = () => {
         </Card>
       ))}
 
-      {Object.keys(questions).length === 0 && (
+      {Object.keys(editedQuestions).length === 0 && (
         <Alert color="info">
           No questions generated yet. Please go back and generate some
           questions.
         </Alert>
       )}
 
-      <Modal isOpen={editModal} toggle={() => setEditModal(!editModal)}>
-        <ModalHeader toggle={() => setEditModal(!editModal)}>Edit Question</ModalHeader>
+      <Modal isOpen={editModal} toggle={() => setEditModal(false)}>
+        <ModalHeader toggle={() => setEditModal(false)}>Edit Question</ModalHeader>
         <ModalBody>
           <FormGroup>
             <Input
@@ -299,8 +293,12 @@ const DisplayGeneratedQuestionsComponent = () => {
           </FormGroup>
         </ModalBody>
         <ModalFooter>
-          <Button color="primary" onClick={handleEditSave}>Save</Button>
-          <Button color="secondary" onClick={() => setEditModal(false)}>Cancel</Button>
+          <Button color="primary" onClick={handleEditSave}>
+            Save Changes
+          </Button>
+          <Button color="secondary" onClick={() => setEditModal(false)}>
+            Cancel
+          </Button>
         </ModalFooter>
       </Modal>
     </Container>
