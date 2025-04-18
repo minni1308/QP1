@@ -7,119 +7,232 @@ import {
   Nav,
   NavItem,
   NavLink,
+  UncontrolledDropdown,
+  DropdownToggle,
+  DropdownMenu,
+  DropdownItem,
+  Container
 } from "reactstrap";
 import { Link, useLocation } from "react-router-dom";
+import { FaPlus, FaFileAlt, FaEdit, FaUserCircle, FaSignOutAlt, FaUser, FaChartLine } from "react-icons/fa";
+import { postLogout } from "../ActionCreators";
 
-const LoginNav = () => {
+const LoginNav = ({ user }) => {
   const [isOpen, setIsOpen] = useState(false);
   const toggle = () => setIsOpen(!isOpen);
   const location = useLocation();
 
-  // Style objects for better organization
-  const styles = {
-    navbar: {
-      width: "100vw",
-      position: "sticky",
-      top: 0,
-      zIndex: 1,
-      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-      backgroundColor: "#ffffff",
-    },
-    brand: {
-      color: "#2c3e50",
-      fontSize: "1.5rem",
-      fontWeight: "600",
-      display: "flex",
-      alignItems: "center",
-      gap: "10px",
-    },
-    // We add a new style that pushes the nav to the right
-    navRight: {
-      marginLeft: "auto",     // This ensures the items float to the right
-      display: "flex",
-      alignItems: "center",
-      gap: "1rem",
-    },
-    navItem: {
-      margin: "0 5px",
-    },
-    navLink: (isActive) => ({
-      color: isActive ? "#ffffff" : "#2c3e50",
-      backgroundColor: isActive ? "#3498db" : "transparent",
-      padding: "0.5rem 1.2rem",
-      borderRadius: "6px",
-      transition: "all 0.3s ease",
-      fontWeight: "500",
-      textTransform: "uppercase",
-      fontSize: "0.9rem",
-      letterSpacing: "0.5px",
-      border: isActive ? "none" : "2px solid #3498db",
-      '&:hover': {
-        backgroundColor: "#3498db",
-        color: "#ffffff",
-        transform: "translateY(-2px)",
-      },
-    }),
-    profileLink: {
-      padding: "0.5rem",
-      marginLeft: "10px",
-    },
-    profileImage: {
-      borderRadius: "50%",
-      border: "2px solid #3498db",
-      padding: "2px",
-      transition: "all 0.3s ease",
-      '&:hover': {
-        transform: "scale(1.1)",
-      },
-    },
+  const isActive = (path) => {
+    return location.pathname.startsWith(path);
   };
 
   return (
-    <div style={styles.navbar}>
-      <Navbar expand="lg" className="px-4 py-2">
-        <NavbarBrand tag={Link} to="/teacher/landing" style={styles.brand}>
-          <img
-            src="/favicon.ico"
-            alt="icon"
-            width={50}
-            style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))" }}
-          />
-          <span>QP Generator</span>
-        </NavbarBrand>
+    <div style={{ 
+      position: "sticky", 
+      top: 0, 
+      zIndex: 100,
+      boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+    }}>
+      <Navbar 
+        expand="lg" 
+        light
+        style={{ 
+          background: "linear-gradient(to right, #ffffff, #f8f9fa)",
+          padding: "0.8rem 1.5rem",
+        }}
+      >
+        <Container fluid className="d-flex">
+          <NavbarBrand
+            tag={Link}
+            to={user?.admin ? "/admin/home" : "/teacher/landing"}
+            className="py-2 me-auto"
+          >
+            <svg width="42" height="42" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: "0.7rem" }}>
+              <circle cx="256" cy="256" r="248" fill="#1e3c72" stroke="#ffffff" stroke-width="16"/>
+              <path d="M160 96h128l64 64v256H160V96z" fill="white"/>
+              <path d="M288 96v64h64" fill="#2a5298"/>
+              <rect x="192" y="200" width="128" height="12" rx="6" fill="white" opacity="0.8"/>
+              <rect x="192" y="240" width="128" height="12" rx="6" fill="white" opacity="0.8"/>
+              <rect x="192" y="280" width="96" height="12" rx="6" fill="white" opacity="0.8"/>
+              <path d="M368 256c0-8.8-1.8-17.2-5-24.8l28.5-28.5-22.6-22.6-28.5 28.5c-7.6-3.2-16-5-24.8-5s-17.2 1.8-24.8 5l-28.5-28.5-22.6 22.6 28.5 28.5c-3.2 7.6-5 16-5 24.8s1.8 17.2 5 24.8l-28.5 28.5 22.6 22.6 28.5-28.5c7.6 3.2 16 5 24.8 5s17.2-1.8 24.8-5l28.5 28.5 22.6-22.6-28.5-28.5c3.2-7.6 5-16 5-24.8z" fill="#2a5298"/>
+              <circle cx="368" cy="256" r="24" fill="white"/>
+            </svg>
+            <span>QP Generator</span>
+          </NavbarBrand>
 
-        <NavbarToggler onClick={toggle} />
+          <NavbarToggler onClick={toggle} className="border-0" />
 
-        <Collapse isOpen={isOpen} navbar>
-          {/* Apply our custom right-align style here */}
-          <Nav navbar style={styles.navRight}>
-            {[
-              { path: "/teacher/insert", text: "Insert" },
-              { path: "/teacher/generate", text: "Generate" },
-              { path: "/teacher/edit", text: "Edit" },
-            ].map((item) => (
-              <NavItem key={item.path} style={styles.navItem}>
-                <NavLink
-                  tag={Link}
-                  to={item.path}
-                  style={styles.navLink(location.pathname === item.path)}
+          <Collapse isOpen={isOpen} navbar className="flex-grow-0">
+            <Nav className="d-flex flex-row align-items-center" navbar>
+              <NavItem className="mx-2">
+                <NavLink 
+                  tag={Link} 
+                  to="/teacher/landing" 
+                  className={`px-3 py-2 rounded-pill ${isActive('/teacher/landing') ? 'active' : ''}`}
+                  style={{
+                    color: isActive('/teacher/landing') ? '#fff' : '#1e3c72',
+                    backgroundColor: isActive('/teacher/landing') ? '#1e3c72' : 'transparent',
+                    fontWeight: "500",
+                    transition: "all 0.3s ease",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    whiteSpace: "nowrap"
+                  }}
                 >
-                  {item.text}
+                  <FaChartLine size={14} />
+                  <span>Dashboard</span>
                 </NavLink>
               </NavItem>
-            ))}
-            <NavItem>
-              <NavLink tag={Link} to="/teacher/profile" style={styles.profileLink}>
-                <img
-                  src="/img/user.png"
-                  alt="user"
-                  width={40}
-                  style={styles.profileImage}
-                />
-              </NavLink>
-            </NavItem>
-          </Nav>
-        </Collapse>
+              
+              <NavItem className="mx-2">
+                <NavLink 
+                  tag={Link} 
+                  to="/teacher/insert" 
+                  className={`px-3 py-2 rounded-pill ${isActive('/teacher/insert') ? 'active' : ''}`}
+                  style={{
+                    color: isActive('/teacher/insert') ? '#fff' : '#1e3c72',
+                    backgroundColor: isActive('/teacher/insert') ? '#1e3c72' : 'transparent',
+                    fontWeight: "500",
+                    transition: "all 0.3s ease",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    whiteSpace: "nowrap"
+                  }}
+                >
+                  <FaPlus size={14} />
+                  <span>Insert</span>
+                </NavLink>
+              </NavItem>
+              
+              <NavItem className="mx-2">
+                <NavLink 
+                  tag={Link} 
+                  to="/teacher/generate" 
+                  className={`px-3 py-2 rounded-pill ${isActive('/teacher/generate') ? 'active' : ''}`}
+                  style={{
+                    color: isActive('/teacher/generate') ? '#fff' : '#1e3c72',
+                    backgroundColor: isActive('/teacher/generate') ? '#1e3c72' : 'transparent',
+                    fontWeight: "500",
+                    transition: "all 0.3s ease",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    whiteSpace: "nowrap"
+                  }}
+                >
+                  <FaFileAlt size={14} />
+                  <span>Generate</span>
+                </NavLink>
+              </NavItem>
+              
+              <NavItem className="mx-2">
+                <NavLink 
+                  tag={Link} 
+                  to="/teacher/edit" 
+                  className={`px-3 py-2 rounded-pill ${isActive('/teacher/edit') ? 'active' : ''}`}
+                  style={{
+                    color: isActive('/teacher/edit') ? '#fff' : '#1e3c72',
+                    backgroundColor: isActive('/teacher/edit') ? '#1e3c72' : 'transparent',
+                    fontWeight: "500",
+                    transition: "all 0.3s ease",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    whiteSpace: "nowrap"
+                  }}
+                >
+                  <FaEdit size={14} />
+                  <span>Edit</span>
+                </NavLink>
+              </NavItem>
+              
+              <UncontrolledDropdown nav inNavbar className="ms-3">
+                <DropdownToggle 
+                  nav 
+                  className="p-0" 
+                  style={{ 
+                    background: 'transparent',
+                    border: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  <div className="d-flex align-items-center">
+                    <div 
+                      style={{ 
+                        width: "38px", 
+                        height: "38px", 
+                        borderRadius: "50%", 
+                        background: "linear-gradient(45deg, #1e3c72, #2a5298)", 
+                        display: "flex", 
+                        alignItems: "center", 
+                        justifyContent: "center",
+                        color: "#fff",
+                        marginRight: "8px",
+                        boxShadow: "0 2px 5px rgba(0,0,0,0.15)"
+                      }}
+                    >
+                      <FaUserCircle size={24} />
+                    </div>
+                    <span 
+                      style={{ 
+                        fontWeight: "500", 
+                        fontSize: "0.95rem", 
+                        color: "#1e3c72",
+                        maxWidth: "120px",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap"
+                      }}
+                    >
+                      {user?.name || user?.username || "Teacher"}
+                    </span>
+                  </div>
+                </DropdownToggle>
+                
+                <DropdownMenu end 
+                  style={{ 
+                    borderRadius: "8px", 
+                    boxShadow: "0 5px 15px rgba(0,0,0,0.1)",
+                    border: "none",
+                    marginTop: "10px",
+                    padding: "0.5rem"
+                  }}
+                >
+                  <DropdownItem 
+                    tag={Link} 
+                    to="/teacher/profile"
+                    style={{
+                      borderRadius: "6px",
+                      transition: "background-color 0.2s ease"
+                    }}
+                    className="d-flex align-items-center py-2"
+                  >
+                    <FaUser className="me-2 text-primary" />
+                    Profile
+                  </DropdownItem>
+                  
+                  <DropdownItem divider className="my-1" />
+                  
+                  <DropdownItem 
+                    onClick={postLogout}
+                    style={{
+                      borderRadius: "6px",
+                      transition: "background-color 0.2s ease",
+                      color: "#dc3545"
+                    }}
+                    className="d-flex align-items-center py-2"
+                  >
+                    <FaSignOutAlt className="me-2" />
+                    Log Out
+                  </DropdownItem>
+                </DropdownMenu>
+              </UncontrolledDropdown>
+            </Nav>
+          </Collapse>
+        </Container>
       </Navbar>
     </div>
   );

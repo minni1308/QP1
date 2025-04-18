@@ -39,7 +39,7 @@ router.route('/:teacherId')
             console.log('Teacher subjects:', subjectIds);
 
             // Get questions for these subjects
-            const questions = await Questions.find({ subject: { $in: subjectIds } });
+            const questions = await Questions.find({ subject: { $in: subjectIds } }).populate('subject');
             console.log('Found questions for subjects:', questions.length);
             
             // Count total questions added by the teacher
@@ -47,15 +47,77 @@ router.route('/:teacherId')
             const questionTypes = ['mcq', 'easy', 'medium', 'hard'];
             const units = ['u1', 'u2', 'u3', 'u4', 'u5'];
             
+            // Initialize unit-wise statistics
+            const unitStats = {};
+            units.forEach(unit => {
+                unitStats[unit] = {
+                    easy: 0,
+                    medium: 0,
+                    hard: 0,
+                    mcq: 0,
+                    total: 0
+                };
+            });
+            
+            // Initialize difficulty totals
+            const difficultyTotals = {
+                easy: 0,
+                medium: 0,
+                hard: 0,
+                mcq: 0
+            };
+            
+            // Initialize subject-wise statistics
+            const subjectStats = {};
+            
+            // Count questions by type and unit
             questions.forEach(question => {
+                const subjectId = question.subject._id.toString();
+                const subjectName = question.subject.name;
+                const subjectCode = question.subject.code;
+                
+                // Initialize subject stats if not exists
+                if (!subjectStats[subjectId]) {
+                    subjectStats[subjectId] = {
+                        name: subjectName,
+                        code: subjectCode,
+                        totalQuestions: 0,
+                        byDifficulty: {
+                            easy: 0,
+                            medium: 0,
+                            hard: 0,
+                            mcq: 0
+                        },
+                        byUnit: {
+                            u1: 0,
+                            u2: 0,
+                            u3: 0,
+                            u4: 0,
+                            u5: 0
+                        }
+                    };
+                }
+                
                 questionTypes.forEach(type => {
                     units.forEach(unit => {
                         if (question[type] && question[type][unit]) {
                             const teacherQuestions = question[type][unit].filter(q => 
                                 q.teacher && q.teacher.equals(ObjectId(teacherId))
                             );
-                            totalQuestions += teacherQuestions.length;
-                            console.log(`Found ${teacherQuestions.length} ${type} questions in unit ${unit}`);
+                            const count = teacherQuestions.length;
+                            totalQuestions += count;
+                            unitStats[unit][type] += count;
+                            unitStats[unit].total += count;
+                            difficultyTotals[type] += count;
+                            
+                            // Update subject-specific counts
+                            if (count > 0) {
+                                subjectStats[subjectId].totalQuestions += count;
+                                subjectStats[subjectId].byDifficulty[type] += count;
+                                subjectStats[subjectId].byUnit[unit] += count;
+                            }
+                            
+                            console.log(`Found ${count} ${type} questions in unit ${unit} for subject ${subjectName}`);
                         }
                     });
                 });
@@ -88,7 +150,10 @@ router.route('/:teacherId')
                 stats: {
                     totalQuestions,
                     papersGenerated,
-                    totalSubjects
+                    totalSubjects,
+                    unitStats,
+                    difficultyTotals,
+                    subjectStats
                 },
                 recentActivities
             });

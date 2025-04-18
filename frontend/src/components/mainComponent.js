@@ -4,7 +4,6 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Signup from "./signup/signupComponent";
 import Confirmation from "./signup/confirmationComponent";
 import Login from "./login/loginComponent";
-import Home from "./home/homeComponent";
 import Landing from "./home/landingComponent";
 import TeacherLanding from "./teacher/teacherLandingComponent";
 import Forgot from "./forgot/verifyComponent";
@@ -50,7 +49,7 @@ const Main = () => {
       {nav}
       <Routes>
         {/* Public Routes */}
-        <Route path="/home" element={<Home />} />
+        <Route path="/home" element={<Landing />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/verify/:userId" element={<Confirmation />} />
         <Route path="/signin" element={<Login />} />
