@@ -8,6 +8,10 @@ import {
   FormGroup,
   Input,
   CardHeader,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
 } from "reactstrap";
 import { useLocation, useNavigate } from "react-router-dom";
 import localStorage from "local-storage";
@@ -33,9 +37,20 @@ const DisplayGeneratedQuestionsComponent = () => {
     medium: new Set(),
     hard: new Set(),
   });
+  const [addedQuestions, setAddedQuestions] = useState({
+    easy: new Set(),
+    medium: new Set(),
+    hard: new Set(),
+  });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [editModal, setEditModal] = useState(false);
+  const [editingQuestion, setEditingQuestion] = useState({
+    level: '',
+    index: -1,
+    text: '',
+  });
 
   useEffect(() => {
     if (!location.state) {
@@ -52,6 +67,11 @@ const DisplayGeneratedQuestionsComponent = () => {
   }, [location.state, questions]);
 
   const handleCheckboxChange = (level, index) => {
+    // Don't allow selection of already added questions
+    if (addedQuestions[level].has(index)) {
+      return;
+    }
+
     setSelectedQuestions(prev => {
       const updatedSet = new Set(prev[level]);
       if (updatedSet.has(index)) {
@@ -63,6 +83,36 @@ const DisplayGeneratedQuestionsComponent = () => {
         ...prev,
         [level]: updatedSet
       };
+    });
+  };
+
+  const handleEditClick = (level, index) => {
+    setEditingQuestion({
+      level,
+      index,
+      text: questions[level][index],
+    });
+    setEditModal(true);
+  };
+
+  const handleEditSave = () => {
+    if (!editingQuestion.text.trim()) {
+      setError("Question text cannot be empty");
+      return;
+    }
+
+    // Update the question in the questions state
+    const updatedQuestions = { ...questions };
+    updatedQuestions[editingQuestion.level][editingQuestion.index] = editingQuestion.text;
+    
+    // Update the location state
+    location.state.questions = updatedQuestions;
+    
+    setEditModal(false);
+    setEditingQuestion({
+      level: '',
+      index: -1,
+      text: '',
     });
   };
 
@@ -124,12 +174,24 @@ const DisplayGeneratedQuestionsComponent = () => {
 
       if (response.ok) {
         setSuccess('Questions successfully added to database!');
+        
+        // Mark the selected questions as added
+        setAddedQuestions(prev => {
+          const newAdded = { ...prev };
+          ['easy', 'medium', 'hard'].forEach(level => {
+            selectedQuestions[level].forEach(index => {
+              newAdded[level].add(index);
+            });
+          });
+          return newAdded;
+        });
+
+        // Clear selections
         setSelectedQuestions({
           easy: new Set(),
-          hard: new Set(),
           medium: new Set(),
+          hard: new Set(),
         });
-        navigate('/teacher/generate-questions');
       } else {
         setError(data.message || 'Failed to add questions to database');
       }
@@ -161,7 +223,7 @@ const DisplayGeneratedQuestionsComponent = () => {
         <Button
           color="primary"
           onClick={handleAddToDatabase}
-          disabled={loading || selectedQuestions.size === 0}
+          disabled={loading || Object.values(selectedQuestions).every(set => set.size === 0)}
         >
           {loading ? "Adding..." : "Add Selected to Database"}
         </Button>
@@ -176,21 +238,42 @@ const DisplayGeneratedQuestionsComponent = () => {
             {level.toUpperCase()}
           </CardHeader>
           <CardBody>
-          <FormGroup check className="me-3">
-            {questions[level].map((question, index) => (
-              <div key={index} className="d-flex align-items-start">
+            <FormGroup check className="me-3">
+              {questions[level].map((question, index) => (
+                <div key={index} className="d-flex align-items-start mb-3">
                   <Input
-                    key={index}
                     type="checkbox"
-                    checked={selectedQuestions[level].has(index)===true}
+                    checked={selectedQuestions[level].has(index)}
                     onChange={() => handleCheckboxChange(level, index)}
+                    disabled={addedQuestions[level].has(index)}
+                    style={{ marginRight: '10px', marginTop: '5px' }}
                   />
-                <div>
-                  <h5>Question {index + 1}</h5>
-                  <p>{question}</p>
+                  <div style={{ 
+                    flex: 1,
+                    opacity: addedQuestions[level].has(index) ? 0.6 : 1 
+                  }}>
+                    <div className="d-flex justify-content-between align-items-start">
+                      <div>
+                        <h5>Question {index + 1}</h5>
+                        <p>{question}</p>
+                        {addedQuestions[level].has(index) && (
+                          <small className="text-success">Added to database</small>
+                        )}
+                      </div>
+                      {!addedQuestions[level].has(index) && (
+                        <Button
+                          color="info"
+                          size="sm"
+                          onClick={() => handleEditClick(level, index)}
+                          style={{ marginLeft: '10px' }}
+                        >
+                          Edit
+                        </Button>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
             </FormGroup>
           </CardBody>
         </Card>
@@ -202,6 +285,24 @@ const DisplayGeneratedQuestionsComponent = () => {
           questions.
         </Alert>
       )}
+
+      <Modal isOpen={editModal} toggle={() => setEditModal(!editModal)}>
+        <ModalHeader toggle={() => setEditModal(!editModal)}>Edit Question</ModalHeader>
+        <ModalBody>
+          <FormGroup>
+            <Input
+              type="textarea"
+              value={editingQuestion.text}
+              onChange={(e) => setEditingQuestion(prev => ({ ...prev, text: e.target.value }))}
+              rows={5}
+            />
+          </FormGroup>
+        </ModalBody>
+        <ModalFooter>
+          <Button color="primary" onClick={handleEditSave}>Save</Button>
+          <Button color="secondary" onClick={() => setEditModal(false)}>Cancel</Button>
+        </ModalFooter>
+      </Modal>
     </Container>
   );
 };
