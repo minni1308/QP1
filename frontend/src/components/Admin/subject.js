@@ -77,7 +77,41 @@ const Subject = () => {
     { label: 'II', value: '2' },
   ];
 
-  // Load departments and subjects on initial load
+  // Filter subjects when search term changes
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (searchTerm) {
+        const lowercaseSearch = searchTerm.toLowerCase();
+        const filtered = subjectList.filter(
+          subject => 
+            subject.sname.toLowerCase().includes(lowercaseSearch) ||
+            subject.scode.toLowerCase().includes(lowercaseSearch) ||
+            subject.dname.toLowerCase().includes(lowercaseSearch)
+        );
+        setFilteredSubjects(filtered);
+      } else {
+        setFilteredSubjects(subjectList);
+      }
+    }, 300); // Add 300ms delay for better performance
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm, subjectList]);
+
+  // Update subjects by department when subject list changes
+  useEffect(() => {
+    const byDept = {};
+    subjectList.forEach(sub => {
+      if (sub.dname) {
+        if (!byDept[sub.dname]) {
+          byDept[sub.dname] = 0;
+        }
+        byDept[sub.dname]++;
+      }
+    });
+    setSubjectsByDepartment(byDept);
+  }, [subjectList]);
+
+  // Load initial data
   useEffect(() => {
     const loadInitialData = async () => {
       setIsLoading(true);
@@ -105,16 +139,6 @@ const Subject = () => {
             }));
             setSubjectList(formattedList);
             setFilteredSubjects(formattedList);
-            
-            // Group subjects by department for statistics
-            const byDept = {};
-            formattedList.forEach(sub => {
-              if (!byDept[sub.dname]) {
-                byDept[sub.dname] = 0;
-              }
-              byDept[sub.dname]++;
-            });
-            setSubjectsByDepartment(byDept);
           }
         }
       } catch (error) {
@@ -131,22 +155,6 @@ const Subject = () => {
     
     loadInitialData();
   }, []);
-
-  // Filter subjects when search term changes
-  useEffect(() => {
-    if (searchTerm) {
-      const lowercaseSearch = searchTerm.toLowerCase();
-      const filtered = subjectList.filter(
-        subject => 
-          subject.sname.toLowerCase().includes(lowercaseSearch) ||
-          subject.scode.toLowerCase().includes(lowercaseSearch) ||
-          subject.dname.toLowerCase().includes(lowercaseSearch)
-      );
-      setFilteredSubjects(filtered);
-    } else {
-      setFilteredSubjects(subjectList);
-    }
-  }, [searchTerm, subjectList]);
 
   // Auto-dismiss alerts
   useEffect(() => {
@@ -480,7 +488,18 @@ const Subject = () => {
                       className="pe-5 border-0 shadow-sm py-2 px-3"
                     />
                     <div className="position-absolute top-50 end-0 translate-middle-y pe-3">
-                      <FaSearch className="text-muted" />
+                      {searchTerm && (
+                        <Button
+                          close
+                          size="sm"
+                          className="p-0 border-0 bg-transparent me-2"
+                          onClick={() => setSearchTerm('')}
+                          style={{ fontSize: '1.2rem' }}
+                        >
+                          <FaTimes className="text-muted" />
+                        </Button>
+                      )}
+                      <FaSearch className="text-muted" style={{ opacity: 0.6 }} />
                     </div>
                   </div>
                 </Col>
