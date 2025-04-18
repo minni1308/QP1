@@ -77,6 +77,7 @@ const adminDepartment = require('./routes/admin/department');
 const adminSubject = require('./routes/admin/subject');
 const teacherSubjectsRouter = require('./routes/admin/teacherSubjects');
 const adminTeachers = require('./routes/admin/teachers');
+const adminActivitiesRouter = require('./routes/admin/activities');
 
 // MCQ routes
 const mcqRouter = require('./routes/teachers/mcq');
@@ -112,6 +113,7 @@ app.use('/admin/department', adminDepartment);
 app.use('/admin/subject', adminSubject);
 app.use('/admin/teachersubjects', teacherSubjectsRouter);
 app.use('/admin/teachers', adminTeachers);
+app.use('/admin/activities', adminActivitiesRouter);
 
 // ─────────────────────────────────────────────────────────────
 // Error Handling
