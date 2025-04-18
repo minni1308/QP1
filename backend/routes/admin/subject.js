@@ -4,6 +4,22 @@ const authenticate = require("../../authenticate");
 const cors = require("../cors");
 const Subject = require("../../models/subject");
 const Department = require("../../models/department");
+const Activity = require("../../models/activity");
+
+// Helper function to log activity
+const logActivity = async (req, description) => {
+  try {
+    const activity = new Activity({
+      description,
+      type: 'SUBJECT',
+      timestamp: new Date(),
+      user: req.user._id
+    });
+    await activity.save();
+  } catch (error) {
+    console.error('Error logging activity:', error);
+  }
+};
 
 subjectRouter.use(express.json());
 
@@ -131,13 +147,14 @@ subjectRouter
 
       if (!dept) return next(new Error("Cannot find the department"));
 
-      await Subject.insertMany({
+      const subject = await Subject.create({
         name: sname,
         code: scode,
         department: dept._id
       });
 
-      return sendResponse(res, 200, { success: true });
+      await logActivity(req, `Added subject ${sname} (${scode}) to ${department.value} Year ${year.value} Semester ${semester.value}`);
+      return res.status(200).json({ success: true });
     } catch (err) {
       next(err);
     }
@@ -147,10 +164,13 @@ subjectRouter
   .delete(cors.corsWithOptions, authenticate.verifyUser, authenticate.verifyAdmin, async (req, res, next) => {
     try {
       const { id } = req.body;
-      const result = await Subject.deleteOne({ code: id });
-
-      return sendResponse(res, 200, {
-        success: result.deletedCount > 0
+      const subject = await Subject.findOne({ code: id }).populate('department');
+      if (subject) {
+        await Subject.deleteOne({ code: id });
+        await logActivity(req, `Deleted subject ${subject.name} (${subject.code})`);
+      }
+      return res.status(200).json({
+        success: true
       });
     } catch (err) {
       next(err);

@@ -1,8 +1,25 @@
 const express = require('express');
 const router = express.Router();
 const teachers = require('../../models/teachers');
+const Subject = require('../../models/subject');
+const Activity = require('../../models/activity');
 const authenticate = require('../../authenticate');
 const cors = require('../cors');
+
+// Helper function to log activity
+const logActivity = async (req, description) => {
+  try {
+    const activity = new Activity({
+      description,
+      type: 'TEACHER',
+      timestamp: new Date(),
+      user: req.user._id
+    });
+    await activity.save();
+  } catch (error) {
+    console.error('Error logging activity:', error);
+  }
+};
 
 // POST endpoint to add subjects to a teacher
 router.route('/add')
@@ -27,6 +44,10 @@ router.route('/add')
                 });
             }
 
+            // Get subject details for activity logging
+            const subjects = await Subject.find({ _id: { $in: subjectIds } });
+            const subjectNames = subjects.map(s => `${s.name} (${s.code})`).join(', ');
+
             // Initialize teachingSubjects array if it doesn't exist
             if (!teacher.teachingSubjects) {
                 teacher.teachingSubjects = [];
@@ -37,6 +58,9 @@ router.route('/add')
             teacher.teachingSubjects = uniqueSubjects;
 
             await teacher.save();
+            
+            // Log activity
+            await logActivity(req, `Assigned subjects [${subjectNames}] to teacher ${teacher.name || teacher.username}`);
 
             res.status(200).json({
                 success: true,
@@ -67,13 +91,20 @@ router.route('/remove')
                 });
             }
 
-            // Find and update the teacher
+            // Find the teacher and subject
             const teacher = await teachers.findById(teacherId);
+            const subject = await Subject.findById(subjectId);
+
             if (!teacher) {
                 return res.status(404).json({
                     success: false,
                     message: 'Teacher not found'
                 });
+            }
+
+            if (subject) {
+                // Log activity before removing
+                await logActivity(req, `Removed subject ${subject.name} (${subject.code}) from teacher ${teacher.name || teacher.username}`);
             }
 
             // Remove the subject
