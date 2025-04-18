@@ -32,7 +32,7 @@ export const getSubjectDetails = (id) =>
   });
 
 export const getQuestions = (details, difficulty) =>
-  fetch(`${baseUrl}/teacher/${difficulty}/get`, {
+  fetch(`${baseUrl}/teacher/${difficulty}Edit/get`, {
     method: "POST",
     headers: getAuthHeaders(),
     body: JSON.stringify(details),
@@ -44,7 +44,7 @@ export const editQuestions = (details, id, difficulty, unit) => {
     unit,
     [difficulty]: details,
   };
-  return fetch(`${baseUrl}/teacher/${difficulty}/put`, {
+  return fetch(`${baseUrl}/teacher/${difficulty}Edit/put`, {
     method: "PUT",
     headers: getAuthHeaders(),
     body: JSON.stringify(payload),
